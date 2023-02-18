@@ -8,7 +8,7 @@ set_xmakever('2.6.1')
 set_version('0.0.1')
 
 -- set warning all as error
-set_warnings('all', 'error')
+-- set_warnings('all', 'error')
 
 -- set language: c99
 set_languages('c2x', 'c++17')
@@ -17,7 +17,7 @@ set_languages('c2x', 'c++17')
 add_rules('mode.release', 'mode.debug')
 
 -- add defines
-add_defines('HAVE_CONF_H', '_GNU_SOURCE')
+add_defines('_GNU_SOURCE')
 add_defines('__STDC_VERSION__=201710L+1')
 
 if is_mode('debug') then
@@ -36,7 +36,9 @@ if is_mode('debug') then
     '-pedantic'
   )
   add_cflags('-pg')
-  add_defines('DEBUG')
+  add_undefines('NDEBUG')
+elseif is_mode('release') then
+  add_defines('NDEBUG')
 end
 
 -- include project sources
@@ -44,5 +46,5 @@ add_includedirs('include/')
 
 target('u', function()
   set_kind('static')
-  add_files('src/**.c')
+  add_files('src/*.c')
 end)
