@@ -6,6 +6,7 @@
 #define _U_DEBUG_H_
 
 #include <errno.h>
+#include <memory.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -119,7 +120,7 @@ typedef int (*u_log_hook_t)(u_cstr_t msg);
 #define dbg_free_if(mem)                                                                           \
   do {                                                                                             \
     if ((mem) != NULL) {                                                                           \
-      free(mem);                                                                                   \
+      u_free(mem);                                                                                   \
       mem = NULL;                                                                                  \
     }                                                                                              \
   } while (false)
