@@ -5,8 +5,8 @@
 #ifndef _U_DEBUG_H_
 #define _U_DEBUG_H_
 
+#include <alloc.h>
 #include <errno.h>
-#include <memory.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -19,11 +19,11 @@
 extern "C" {
 #endif
 
-#ifndef U_LOG_MAX_LENGTH
-#  define U_LOG_MAX_LENGTH 1024
+#ifndef U_DBG_MAX_LENGTH
+#  define U_DBG_MAX_LENGTH 1024
 #endif
 
-typedef int (*u_log_hook_t)(u_cstr_t msg);
+typedef int (*u_dbg_hook_t)(u_cstr_t msg);
 
 #ifdef NDEBUG
 
@@ -35,7 +35,7 @@ typedef int (*u_log_hook_t)(u_cstr_t msg);
 
 #else /* disable debugging */
 
-#  define msg(lev, ...) u_log_write_ex(lev, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
+#  define msg(lev, ...) u_dbg_write_ex(lev, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
 
 #  define u_con(...)  msg(LOG_CONS, __VA_ARGS__)
 #  define u_err(...)  msg(LOG_ERR, __VA_ARGS__)
@@ -120,13 +120,13 @@ typedef int (*u_log_hook_t)(u_cstr_t msg);
 #define dbg_free_if(mem)                                                                           \
   do {                                                                                             \
     if ((mem) != NULL) {                                                                           \
-      u_free(mem);                                                                                   \
+      u_free(mem);                                                                                 \
       mem = NULL;                                                                                  \
     }                                                                                              \
   } while (false)
 
-void u_log_set_hook(u_log_hook_t f);
-int u_log_write_ex(int lev, const char* file, int line, const char* func, const char* fmt, ...);
+void u_dbg_set_hook(u_dbg_hook_t f);
+int u_dbg_write_ex(int lev, const char* file, int line, const char* func, const char* fmt, ...);
 
 #ifdef __cplusplus
 }

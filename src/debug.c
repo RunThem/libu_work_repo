@@ -6,13 +6,13 @@
 #include <syslog.h>
 #include <unistd.h>
 
-static u_log_hook_t hook = NULL;
+static u_dbg_hook_t hook = NULL;
 
-void u_log_set_hook(u_log_hook_t f) {
+void u_dbg_set_hook(u_dbg_hook_t f) {
   hook = f;
 }
 
-static inline const char* u_log_label(int lev) {
+static inline const char* u_dbg_label(int lev) {
   switch (lev) {
     case LOG_DEBUG:
       return "\033[37;1mdbg\033[0m";
@@ -33,13 +33,13 @@ static inline const char* u_log_label(int lev) {
 static int u_log(const char* fmt, ...) {
   int rc;
   va_list ap;
-  char buf[U_LOG_MAX_LENGTH] = {0};
+  char buf[U_DBG_MAX_LENGTH] = {0};
 
   va_start(ap, fmt);
   rc = vsnprintf(buf, sizeof(buf), fmt, ap);
   va_end(ap);
 
-  if (rc >= U_LOG_MAX_LENGTH) {
+  if (rc >= U_DBG_MAX_LENGTH) {
     goto err; /* message too long */
   }
 
@@ -54,12 +54,12 @@ err:
   return ~0;
 }
 
-int u_log_write_ex(int lev, const char* file, int line, const char* func, const char* fmt, ...) {
+int u_dbg_write_ex(int lev, const char* file, int line, const char* func, const char* fmt, ...) {
 #define STRERR_BUFSZ 128
   int save_err;
   int rc;
   va_list ap;
-  char msg[U_LOG_MAX_LENGTH] = {0};
+  char msg[U_DBG_MAX_LENGTH] = {0};
   char errmsg[STRERR_BUFSZ]  = {0};
 
   save_err = errno;
@@ -69,7 +69,7 @@ int u_log_write_ex(int lev, const char* file, int line, const char* func, const 
   rc = vsnprintf(msg, sizeof(msg), fmt, ap);
   va_end(ap);
 
-  if (rc >= U_LOG_MAX_LENGTH) {
+  if (rc >= U_DBG_MAX_LENGTH) {
     goto err; /* message too long */
   }
 
@@ -78,7 +78,7 @@ int u_log_write_ex(int lev, const char* file, int line, const char* func, const 
   }
 
   /* send the msg to the logger */
-  u_log("[%s][%s/%d:%s] %s %s\n", u_log_label(lev), file, line, func, msg, errmsg);
+  u_log("[%s][%s/%d:%s] %s %s\n", u_dbg_label(lev), file, line, func, msg, errmsg);
 
   errno = save_err;
   return 0;

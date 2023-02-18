@@ -11,10 +11,10 @@ extern "C" {
 
 #include <types.h>
 
-void u_memory_set_malloc(u_nullptr_t (*f_malloc)(size_t));
-void u_memory_set_calloc(u_nullptr_t (*f_calloc)(size_t, size_t));
-void u_memory_set_realloc(u_nullptr_t (*f_realloc)(u_nullptr_t, size_t));
-void u_memory_set_free(void (*f_free)(u_nullptr_t));
+void u_alloc_set_malloc(u_nullptr_t (*f_malloc)(size_t));
+void u_alloc_set_calloc(u_nullptr_t (*f_calloc)(size_t, size_t));
+void u_alloc_set_realloc(u_nullptr_t (*f_realloc)(u_nullptr_t, size_t));
+void u_alloc_set_free(void (*f_free)(u_nullptr_t));
 
 u_nullptr_t u_malloc(size_t sz);
 u_nullptr_t u_calloc(size_t cnt, size_t sz);
