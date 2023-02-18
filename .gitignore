@@ -140,6 +140,7 @@ fabric.properties
 # .nfs files are created when an open file is removed but is still being accessed
 .nfs*
 
+build/
 build/.build_cache
 build/.objs
 build/.deps
@@ -153,3 +154,4 @@ Makefile.conf
 doc/doxy/libu.doxy
 include/u/libu_conf.h
 compile_commands.json
+CMakeLists.txt
