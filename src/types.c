@@ -51,9 +51,6 @@ const void* u_types_parse_(u_types_arg_t* arg, va_list ap) {
     case U_TYPES_F128:
       arg->t_f128 = (u_f128_t)va_arg(ap, long double);
       return &arg->t_f128;
-    case U_TYPES_CSTR:
-      arg->t_cstr = (u_cstr_t)va_arg(ap, char*);
-      return &arg->t_cstr;
     case U_TYPES_NULLPTR:
       arg->t_nullptr = (u_nullptr_t)va_arg(ap, void*);
       return &arg->t_nullptr;

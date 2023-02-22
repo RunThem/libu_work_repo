@@ -8,6 +8,7 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <str.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,7 +32,6 @@ typedef float u_f32_t;
 typedef double u_f64_t;
 typedef long double u_f128_t;
 
-typedef char* u_cstr_t;
 typedef void* u_nullptr_t;
 typedef struct u_any {
   struct u_any* _next; /* not used. */
@@ -53,9 +53,10 @@ typedef enum {
   U_TYPES_F32,
   U_TYPES_F64,
   U_TYPES_F128,
-  U_TYPES_CSTR,
   U_TYPES_NULLPTR,
   U_TYPES_ANY,
+  U_TYPES_C_STR,
+  U_TYPES_STR,
   U_TYPES_NONE,
 } u_types_type_e;
 
@@ -77,32 +78,35 @@ typedef union {
   u_f32_t t_f32;
   u_f64_t t_f64;
   u_f128_t t_f128;
-  u_cstr_t t_cstr;
   u_nullptr_t t_nullptr;
   u_any_t t_any;
+  u_c_str_t t_c_str;
+  u_str_t t_str;
 } u_types_arg_t;
 
-#define u_types_of(expr)                                                                           \
-  _Generic((expr), char                                                                            \
-           : U_TYPES_BYTE, u_bool_t                                                                \
-           : U_TYPES_BOOL, u_i8_t                                                                  \
-           : U_TYPES_I8, u_u8_t                                                                    \
-           : U_TYPES_U8, u_i16_t                                                                   \
-           : U_TYPES_I16, u_u16_t                                                                  \
-           : U_TYPES_U16, u_i32_t                                                                  \
-           : U_TYPES_I32, u_u32_t                                                                  \
-           : U_TYPES_U32, u_i64_t                                                                  \
-           : U_TYPES_I64, u_u64_t                                                                  \
-           : U_TYPES_U64, u_i128_t                                                                 \
-           : U_TYPES_I128, u_u128_t                                                                \
-           : U_TYPES_U128, u_f32_t                                                                 \
-           : U_TYPES_F32, u_f64_t                                                                  \
-           : U_TYPES_F64, u_f128_t                                                                 \
-           : U_TYPES_F128, u_cstr_t                                                                \
-           : U_TYPES_CSTR, u_nullptr_t                                                             \
-           : U_TYPES_NULLPTR, u_any_t                                                              \
-           : U_TYPES_ANY, default                                                                  \
-           : U_TYPES_NONE)
+/* clang-format off */
+#define u_types_of(expr) _Generic((expr),                                                                                 \
+char         : U_TYPES_BYTE,                                                                       \
+u_bool_t     : U_TYPES_BOOL,                                                                       \
+u_i8_t       : U_TYPES_I8,                                                                         \
+u_u8_t       : U_TYPES_U8,                                                                         \
+u_i16_t      : U_TYPES_I16,                                                                        \
+u_u16_t      : U_TYPES_U16,                                                                        \
+u_i32_t      : U_TYPES_I32,                                                                        \
+u_u32_t      : U_TYPES_U32,                                                                        \
+u_i64_t      : U_TYPES_I64,                                                                        \
+u_u64_t      : U_TYPES_U64,                                                                        \
+u_i128_t     : U_TYPES_I128,                                                                       \
+u_u128_t     : U_TYPES_U128,                                                                       \
+u_f32_t      : U_TYPES_F32,                                                                        \
+u_f64_t      : U_TYPES_F64,                                                                        \
+u_f128_t     : U_TYPES_F128,                                                                       \
+u_nullptr_t  : U_TYPES_NULLPTR,                                                                    \
+u_any_t      : U_TYPES_ANY,                                                                        \
+u_c_str_t    : U_TYPES_C_STR,                                                                      \
+u_str_t      : U_TYPES_STR,                                                                        \
+default      : U_TYPES_NONE)
+/* clang-format on */
 
 #define u_types_parse(p, t, a)                                                                     \
   do {                                                                                             \

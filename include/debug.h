@@ -13,7 +13,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
-#include <types.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,7 +22,7 @@ extern "C" {
 #  define U_DBG_MAX_LENGTH 1024
 #endif
 
-typedef int (*u_dbg_hook_t)(u_cstr_t msg);
+typedef int (*u_dbg_hook_t)(u_str_t msg);
 
 #ifdef NDEBUG
 
