@@ -14,28 +14,46 @@
 extern "C" {
 #endif
 
+#define u_byte(v) ((char)(v))
+
 typedef _Bool u_bool_t;
+#define u_bool(v) ((u_bool_t)(v))
 
 typedef signed char u_i8_t;
 typedef signed short u_i16_t;
 typedef signed int u_i32_t;
 typedef signed long int u_i64_t;
 typedef __int128_t u_i128_t;
+#define u_i8(v)   ((u_i8_t)(v))
+#define u_i16(v)  ((u_i16_t)(v))
+#define u_i32(v)  ((u_i32_t)(v))
+#define u_i64(v)  ((u_i64_t)(v))
+#define u_i128(v) ((u_i128_t)(v))
 
 typedef unsigned char u_u8_t;
 typedef unsigned short u_u16_t;
 typedef unsigned int u_u32_t;
 typedef unsigned long int u_u64_t;
 typedef __uint128_t u_u128_t;
+#define u_u8(v)   ((u_u8_t)(v))
+#define u_u16(v)  ((u_u16_t)(v))
+#define u_u32(v)  ((u_u32_t)(v))
+#define u_u64(v)  ((u_u64_t)(v))
+#define u_u128(v) ((u_u128_t)(v))
 
 typedef float u_f32_t;
 typedef double u_f64_t;
 typedef long double u_f128_t;
+#define u_f32(v)  ((u_f32_t)(v))
+#define u_f64(v)  ((u_f64_t)(v))
+#define u_f128(v) ((u_f128_t)(v))
 
 typedef void* u_nullptr_t;
-typedef struct u_any {
-  struct u_any* _next; /* not used. */
-}* u_any_t;
+#define u_nullptr(v) ((u_nullptr_t)(v))
+
+typedef struct {
+} * u_any_t;
+#define u_any(v) ((u_any_t)(v))
 
 typedef enum {
   U_TYPES_BYTE = 1,
@@ -55,9 +73,11 @@ typedef enum {
   U_TYPES_F128,
   U_TYPES_NULLPTR,
   U_TYPES_ANY,
+
   U_TYPES_C_STR,
   U_TYPES_STR,
-  U_TYPES_NONE,
+
+  U_TYPES_NONE = 127,
 } u_types_type_e;
 
 typedef union {
@@ -80,12 +100,13 @@ typedef union {
   u_f128_t t_f128;
   u_nullptr_t t_nullptr;
   u_any_t t_any;
+
   u_c_str_t t_c_str;
   u_str_t t_str;
 } u_types_arg_t;
 
 /* clang-format off */
-#define u_types_of(expr) _Generic((expr),                                                                                 \
+#define u_types_of(expr) _Generic((expr),                                                          \
 char         : U_TYPES_BYTE,                                                                       \
 u_bool_t     : U_TYPES_BOOL,                                                                       \
 u_i8_t       : U_TYPES_I8,                                                                         \
@@ -103,8 +124,10 @@ u_f64_t      : U_TYPES_F64,                                                     
 u_f128_t     : U_TYPES_F128,                                                                       \
 u_nullptr_t  : U_TYPES_NULLPTR,                                                                    \
 u_any_t      : U_TYPES_ANY,                                                                        \
+                                                                                                   \
 u_c_str_t    : U_TYPES_C_STR,                                                                      \
 u_str_t      : U_TYPES_STR,                                                                        \
+                                                                                                   \
 default      : U_TYPES_NONE)
 /* clang-format on */
 
@@ -113,11 +136,9 @@ default      : U_TYPES_NONE)
     va_list _ap;                                                                                   \
     va_start(_ap, t);                                                                              \
     (a).type = (t);                                                                                \
-    (p)      = u_types_parse_(&(a), _ap);                                                          \
+    (p)      = _u_types_parse(&(a), _ap);                                                          \
     va_end(_ap);                                                                                   \
   } while (0)
-
-const void* u_types_parse_(u_types_arg_t* arg, va_list ap);
 
 #ifdef __cplusplus
 } /* extern "C" */

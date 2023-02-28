@@ -4,7 +4,7 @@
 
 #include <types.h>
 
-const void* u_types_parse_(u_types_arg_t* arg, va_list ap) {
+const u_nullptr_t _u_types_parse(u_types_arg_t* arg, va_list ap) {
   switch (arg->type) {
     case U_TYPES_BYTE:
       arg->t_byte = (char)va_arg(ap, int);

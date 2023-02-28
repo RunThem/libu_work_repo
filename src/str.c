@@ -110,7 +110,7 @@ int u_str_resize(u_str_t* s, size_t size) {
   dbg_alloc_if(str);
 
   str->alloc = size;
-  *s = (u_str_t)str->buf;
+  *s         = (u_str_t)str->buf;
 
   return 0;
 err:
@@ -118,6 +118,24 @@ err:
 }
 
 int u_str_cat(u_str_t* s, u_str_t s1) {
+  dbg_return_if(s == NULL, ~0);
+  dbg_return_if(*s == NULL, ~0);
+  dbg_return_if(s1 == NULL, ~0);
+
+  if (u_str_alloc(*s) - u_str_len(*s) < u_str_len(s1)) {
+    /* TODO: resize */
+    u_str_resize(s, u_misc_align_2pow(u_str_alloc(*s) + u_str_len(s1)));
+  }
+
+  strncpy(&(*s)[u_str_len(*s)], s1, u_str_len(s1));
+  container_of(*s, struct u_str, buf)->len += u_str_len(s1);
+
+  return 0;
+err:
+  return ~0;
+}
+
+int u_str_cat_(u_str_t* s, u_str_t s1) {
   dbg_return_if(s == NULL, ~0);
   dbg_return_if(*s == NULL, ~0);
   dbg_return_if(s1 == NULL, ~0);

@@ -6,6 +6,7 @@
 #include <limits.h>
 #include <math.h>
 #include <misc.h>
+#include <mut.h>
 #include <types.h>
 
 int main() {

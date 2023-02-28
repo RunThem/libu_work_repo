@@ -15,10 +15,10 @@ extern "C" {
 #  define U_STR_DEFAULT_LENGTH 16
 #endif /* !U_STR_DEFAULT_LENGTH */
 
-#define const_str(s) ((const char*)(s))
-
+typedef const char* u_c_str_t;
 typedef char* u_str_t;
-typedef const char* const u_c_str_t;
+#define u_c_str(v) ((u_c_str_t)(v))
+#define u_str(v)   ((u_str_t)(v))
 
 u_str_t u_str_create(size_t s);
 u_str_t u_str_create_from(u_c_str_t s);
