@@ -3,7 +3,11 @@
 #include <malloc.h>
 #include <mimalloc.h>
 #include <mut.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
+#include <sys/time.h>
+#include <time.h>
 #include <types.h>
 
 mut_test(libu_alloc_malloc) {
@@ -12,16 +16,26 @@ mut_test(libu_alloc_malloc) {
 
   u_free(buf);
 
-  int* data[100000];
-  bzero(data, 100000 * sizeof(int*));
+#define mut_blank_line()
+#define mut_bench(msg, block)                                                                      \
+  printf("        bench \"%s\" ", msg);                                                            \
+  do {                                                                                             \
+    size_t MUT_N  = 1;                                                                             \
+    clock_t start = 0, end = 0;                                                                    \
+    for (; (end - start) < 100000 /* 0.1s */; end = clock()) {                                     \
+      MUT_N *= 10;                                                                                 \
+      start = clock();                                                                             \
+      for (size_t count; count < MUT_N; count++) {                                                 \
+        block                                                                                      \
+      }                                                                                            \
+    }                                                                                              \
+    printf("%ld us, %.2f ns\n", end - start, (double)((end - start) * 1000 / MUT_N));              \
+  } while (0)
 
-  for (size_t i = 0; i < 100000; i++) {
-    data[i] = u_malloc(i * sizeof(int));
-  }
-
-  for (size_t i = 0; i < 100000; i++) {
-    u_free(data[i]);
-  }
+  mut_bench("u_malloc()", {
+    mut_blank_line();
+    u_malloc(count * sizeof(int));
+  });
 }
 
 mut_group(libu_alloc) {
