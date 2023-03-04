@@ -1,8 +1,8 @@
 #include <mut.h>
 
-mut_extern_group(libu_types);
-mut_extern_group(libu_alloc);
-mut_extern_group(libu_misc);
+mut_extern(libu_types);
+mut_extern(libu_alloc);
+mut_extern(libu_misc);
 
 int main(void) {
   mut_init("hello libu");
