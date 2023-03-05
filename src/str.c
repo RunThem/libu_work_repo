@@ -22,8 +22,7 @@ u_str_t u_str_create(size_t size) {
     size = U_STR_DEFAULT_LENGTH;
   }
 
-  str = u_zalloc(size);
-  dbg_alloc_if(str);
+  dbg_alloc_if(str = u_zalloc(u_str_size + size + 1));
 
   str->alloc = size;
   _str       = (u_str_t)str->buf;
@@ -34,27 +33,22 @@ err:
 }
 
 u_str_t u_str_create_from(u_c_str_t c_str) {
-  size_t c_str_size;
+  size_t str_size;
   size_t alloc_size;
   struct u_str* str = NULL;
   u_str_t _str      = NULL;
 
   dbg_return_if(c_str == NULL, NULL);
 
-  c_str_size = strlen(c_str);
+  str_size = strlen(c_str);
+  alloc_size =
+      (str_size < U_STR_DEFAULT_LENGTH) ? U_STR_DEFAULT_LENGTH : u_misc_align_2pow(str_size);
 
-  if (c_str_size < U_STR_DEFAULT_LENGTH) {
-    alloc_size = U_STR_DEFAULT_LENGTH;
-  } else {
-    alloc_size = u_misc_align_2pow(c_str_size);
-  }
+  dbg_alloc_if(str = u_zalloc(u_str_size + alloc_size + 1));
 
-  str = u_zalloc(u_str_size + alloc_size);
-  dbg_alloc_if(str);
+  strncpy(str->buf, c_str, str_size);
 
-  strncpy(str->buf, c_str, c_str_size);
-
-  str->len   = c_str_size;
+  str->len   = str_size;
   str->alloc = alloc_size;
   _str       = (u_str_t)str->buf;
 
@@ -96,12 +90,10 @@ int u_str_resize(u_str_t* s, size_t size) {
 
   str = container_of(*s, struct u_str, buf);
 
-  str = u_realloc(str, u_str_size + size);
-  dbg_alloc_if(str);
+  dbg_alloc_if(str = u_realloc(str, u_str_size + size + 1));
 
   str->alloc = size;
-
-  *s = (u_str_t)str->buf;
+  *s         = (u_str_t)str->buf;
 
   return 0;
 err:
@@ -112,8 +104,10 @@ int _u_str_cat(u_str_t* s, u_types_type_e type, ...) {
   int ret = 0;
   size_t str_size;
   size_t alloc_size;
+
   va_list ap;
   u_types_arg_t arg = {.type = type};
+
   u_nullptr_t ptr   = NULL;
   struct u_str* str = NULL;
 
@@ -122,48 +116,27 @@ int _u_str_cat(u_str_t* s, u_types_type_e type, ...) {
   dbg_return_if(type == U_TYPES_NONE, ~0);
 
   va_start(ap, type);
-  ptr = u_types_parse(&arg, ap);
-  dbg_err_if(ptr == NULL);
+  dbg_alloc_if(ptr = u_types_parse(&arg, ap));
 
-  switch (arg.type) {
-    case U_TYPES_BYTE:
-      str = container_of(*s, struct u_str, buf);
-
-      str->buf[str->len] = arg.t_byte;
-      str->len++;
-
-      break;
-    case U_TYPES_C_STR:
-      str_size = strlen(arg.t_c_str);
-      if (str_size > u_str_free(*s)) {
-        alloc_size = u_misc_align_2pow(str_size + u_str_len(*s));
-        ret        = u_str_resize(s, alloc_size);
-        dbg_err_if(ret != 0);
-      }
-
-      str = container_of(*s, struct u_str, buf);
-
-      strncpy(&str->buf[str->len], arg.t_c_str, str_size);
-      str->len += str_size;
-
-      break;
-    case U_TYPES_STR:
-      str_size = u_str_len(arg.t_str);
-      if (str_size > u_str_free(*s)) {
-        alloc_size = u_misc_align_2pow(str_size + u_str_len(*s));
-        ret        = u_str_resize(s, alloc_size);
-        dbg_err_if(ret != 0);
-      }
-
-      str = container_of(*s, struct u_str, buf);
-
-      strncpy(&str->buf[str->len], arg.t_str, str_size);
-      str->len += str_size;
-
-      break;
-    default:
-      break;
+  if (type == U_TYPES_BYTE) {
+    str_size = 1;
+  } else if (type == U_TYPES_C_STR) {
+    str_size = strlen(arg.t_c_str);
+  } else if (type == U_TYPES_STR) {
+    str_size = u_str_len(arg.t_str);
+  } else {
+    dbg_err("type is %d", type);
   }
+
+  if (str_size > u_str_free(*s)) {
+    alloc_size = u_misc_align_2pow(str_size + u_str_len(*s));
+    dbg_err_if(u_str_resize(s, alloc_size) != 0);
+  }
+
+  str = container_of(*s, struct u_str, buf);
+
+  strncpy(&str->buf[str->len], ptr, str_size);
+  str->len += str_size;
 
   va_end(ap);
 

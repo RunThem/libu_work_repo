@@ -104,7 +104,7 @@ mut_test(libu_str_cat_of_char) {
   } tbl[] = {
       {"hello",             'L', 16, "helloL"            },
       {"hello world",       'L', 16, "hello worldL"      },
-      {"hello world worl",  'L', 16, "hello world worlL" },
+      {"hello world worl",  'L', 32, "hello world worlL" },
       {"hello world world", 'L', 32, "hello world worldL"},
   };
 
