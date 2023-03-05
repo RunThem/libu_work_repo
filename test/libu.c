@@ -3,6 +3,7 @@
 mut_extern(libu_types);
 mut_extern(libu_alloc);
 mut_extern(libu_misc);
+mut_extern(libu_str);
 
 int main(void) {
   mut_init("hello libu");
@@ -10,6 +11,7 @@ int main(void) {
   mut_add_group(libu_types, "test libu types");
   mut_add_group(libu_alloc, "test libu alloc");
   mut_add_group(libu_misc, "test libu misc");
+  mut_add_group(libu_str, "test libu str");
 
   mut_results();
 

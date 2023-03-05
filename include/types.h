@@ -8,13 +8,13 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
-#include <str.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define u_byte(v) ((char)(v))
+typedef char u_byte_t;
+#define u_byte(v) ((u_byte_t)(v))
 
 typedef _Bool u_bool_t;
 #define u_bool(v) ((u_bool_t)(v))
@@ -52,8 +52,16 @@ typedef void* u_nullptr_t;
 #define u_nullptr(v) ((u_nullptr_t)(v))
 
 typedef struct {
-} * u_any_t;
+}* u_any_t;
 #define u_any(v) ((u_any_t)(v))
+
+typedef const char* u_c_str_t;
+#define u_c_str(v) ((u_c_str_t)(v))
+
+typedef struct {
+  char buf[0];
+}* u_str_t;
+#define u_str(v) ((u_str_t)(v))
 
 typedef enum {
   U_TYPES_BYTE = 1,
@@ -73,41 +81,43 @@ typedef enum {
   U_TYPES_F128,
   U_TYPES_NULLPTR,
   U_TYPES_ANY,
-
   U_TYPES_C_STR,
+
   U_TYPES_STR,
 
   U_TYPES_NONE = 127,
 } u_types_type_e;
 
-typedef union {
+typedef struct {
   u_types_type_e type;
 
-  char t_byte;
-  u_bool_t t_bool;
-  u_i8_t t_i8;
-  u_u8_t t_u8;
-  u_i16_t t_i16;
-  u_u16_t t_u16;
-  u_i32_t t_i32;
-  u_u32_t t_u32;
-  u_i64_t t_i64;
-  u_u64_t t_u64;
-  u_i128_t t_i128;
-  u_u128_t t_u128;
-  u_f32_t t_f32;
-  u_f64_t t_f64;
-  u_f128_t t_f128;
-  u_nullptr_t t_nullptr;
-  u_any_t t_any;
+  union {
+    u_byte_t t_byte;
+    u_bool_t t_bool;
+    u_i8_t t_i8;
+    u_u8_t t_u8;
+    u_i16_t t_i16;
+    u_u16_t t_u16;
+    u_i32_t t_i32;
+    u_u32_t t_u32;
+    u_i64_t t_i64;
+    u_u64_t t_u64;
+    u_i128_t t_i128;
+    u_u128_t t_u128;
+    u_f32_t t_f32;
+    u_f64_t t_f64;
+    u_f128_t t_f128;
+    u_nullptr_t t_nullptr;
+    u_any_t t_any;
+    u_c_str_t t_c_str;
 
-  u_c_str_t t_c_str;
-  u_str_t t_str;
+    u_str_t t_str;
+  };
 } u_types_arg_t;
 
 /* clang-format off */
 #define u_types_of(expr) _Generic((expr),                                                          \
-char         : U_TYPES_BYTE,                                                                       \
+u_byte_t     : U_TYPES_BYTE,                                                                       \
 u_bool_t     : U_TYPES_BOOL,                                                                       \
 u_i8_t       : U_TYPES_I8,                                                                         \
 u_u8_t       : U_TYPES_U8,                                                                         \
@@ -124,21 +134,23 @@ u_f64_t      : U_TYPES_F64,                                                     
 u_f128_t     : U_TYPES_F128,                                                                       \
 u_nullptr_t  : U_TYPES_NULLPTR,                                                                    \
 u_any_t      : U_TYPES_ANY,                                                                        \
-                                                                                                   \
 u_c_str_t    : U_TYPES_C_STR,                                                                      \
+                                                                                                   \
 u_str_t      : U_TYPES_STR,                                                                        \
                                                                                                    \
 default      : U_TYPES_NONE)
 /* clang-format on */
 
-#define u_types_parse(p, t, a)                                                                     \
-  do {                                                                                             \
-    va_list _ap;                                                                                   \
-    va_start(_ap, t);                                                                              \
-    (a).type = (t);                                                                                \
-    (p)      = _u_types_parse(&(a), _ap);                                                          \
-    va_end(_ap);                                                                                   \
-  } while (0)
+const u_nullptr_t u_types_parse(u_types_arg_t* arg, va_list ap);
+
+//#define u_types_parse(p, t, a)                                                                     \
+//  do {                                                                                             \
+//    va_list _ap;                                                                                   \
+//    va_start(_ap, t);                                                                              \
+//    (a).type = (t);                                                                                \
+//    (p)      = _u_types_parse(&(a), _ap);                                                          \
+//    va_end(_ap);                                                                                   \
+//  } while (0)
 
 #ifdef __cplusplus
 } /* extern "C" */

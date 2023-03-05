@@ -14,7 +14,8 @@ typedef struct {
 } u_alloc_fns_t;
 
 /* defaults to LibC memory allocator */
-static u_alloc_fns_t u_alloc_fns = {mi_malloc, mi_calloc, mi_realloc, mi_free};
+//static u_alloc_fns_t u_alloc_fns = {mi_malloc, mi_calloc, mi_realloc, mi_free};
+static u_alloc_fns_t u_alloc_fns = {malloc, calloc, realloc, free};
 
 void u_alloc_set_malloc(u_nullptr_t (*f_malloc)(size_t)) {
   u_alloc_fns.f_malloc = f_malloc;

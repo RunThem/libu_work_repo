@@ -5,44 +5,69 @@
 #include <debug.h>
 #include <limits.h>
 #include <math.h>
-#include <misc.h>
+// #include <mimalloc.h>
+// #include <misc.h>
 #include <mut.h>
+#include <str.h>
 #include <types.h>
 
 int main() {
 
-  u_str_t str = u_str_create(32);
+  u_str_t str = u_str_create_from("hello world");
 
-  printf("type %d\n", u_types_of(str));
+  u_con("type %d", u_types_of(str));
+  u_con("buf[0] = '%c'", str->buf[0]);
+  u_con("\"%s\"", str->buf);
 
-  u_str_free(str);
+  u_con("len is %ld", u_str_len(str));
+  u_con("alloc is %ld", u_str_alloc(str));
+  u_con("free is %ld", u_str_free(str));
 
-  // for (size_t i = 0; i < 1000; i++) {
-  //   u_con("%d", u_misc_align_2pow(i));
-  // }
+  u_str_resize(&str, 17);
 
-  u_con("%lu", u_misc_align_2pow(powf128(2, 32) + 1));
+  u_con("len is %ld", u_str_len(str));
+  u_con("alloc is %ld", u_str_alloc(str));
+  u_con("free is %ld", u_str_free(str));
 
-  str = u_str_create_from("hello world");
-  u_con("%s size is %d", str, u_str_len(str));
-  u_str_free(str);
-  u_con("");
+  u_str_cat(&str, u_byte('v'));
 
-  u_str_init(&str);
-  u_con(str);
+  u_con("\"%s\"", str->buf);
+  u_con("len is %ld", u_str_len(str));
+  u_con("alloc is %ld", u_str_alloc(str));
+  u_con("free is %ld", u_str_free(str));
 
-  u_str_free(str);
+  u_str_cat(&str, u_c_str("helo aj dfiahg wi"));
 
-  u_str_init_from(&str, "hello libu str");
-  u_con(str);
+  u_con("\"%s\"", str->buf);
+  u_con("len is %ld", u_str_len(str));
+  u_con("alloc is %ld", u_str_alloc(str));
+  u_con("free is %ld", u_str_free(str));
 
-  u_con("%d", u_str_len(str));
-  u_str_cat(&str, u_str_create_from("oo0"));
+  u_str_clean(str);
 
-  u_con(str);
-  u_con("%d, %d", u_str_len(str), u_str_alloc(str));
+  str = u_str_create_from("hello ");
 
-  u_str_free(str);
+  u_con("\"%s\"", str->buf);
+  u_con("len is %ld", u_str_len(str));
+  u_con("alloc is %ld", u_str_alloc(str));
+  u_con("free is %ld", u_str_free(str));
+
+  u_str_t str1 = u_str_create_from("world");
+
+  u_con("\"%s\"", str1->buf);
+  u_con("len is %ld", u_str_len(str1));
+  u_con("alloc is %ld", u_str_alloc(str1));
+  u_con("free is %ld", u_str_free(str1));
+
+  u_str_cat(&str, str1);
+
+  u_con("\"%s\"", str->buf);
+  u_con("len is %ld", u_str_len(str));
+  u_con("alloc is %ld", u_str_alloc(str));
+  u_con("free is %ld", u_str_free(str));
+
+  u_str_clean(str);
+  u_str_clean(str1);
 
   u_con("hello con");
   u_info("hello info");
@@ -54,17 +79,8 @@ int main() {
   u_con("hasidfa %s", "jsdf");
   errno = 0;
 
-  char* ptr = malloc(2300);
-  dbg_alloc_if(ptr);
-
-  u_con("%p", ptr);
-  dbg_free_if(ptr);
-  u_con("%p", ptr);
-
   return 0;
 err:
-
-  dbg_free_if(ptr);
 
   return 0;
 }

@@ -1,4 +1,5 @@
 #include <mut.h>
+#include <str.h>
 #include <types.h>
 
 mut_test(libu_types_base_type) {
@@ -67,7 +68,7 @@ mut_test(libu_types_advanced_type) {
 
   mut_equal(U_TYPES_STR, u_types_of(t_str));
 
-  u_str_free(t_str);
+  u_str_clean(t_str);
 }
 
 mut_group(libu_types) {

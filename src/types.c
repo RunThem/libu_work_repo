@@ -4,7 +4,7 @@
 
 #include <types.h>
 
-const u_nullptr_t _u_types_parse(u_types_arg_t* arg, va_list ap) {
+const u_nullptr_t u_types_parse(u_types_arg_t* arg, va_list ap) {
   switch (arg->type) {
     case U_TYPES_BYTE:
       arg->t_byte = (char)va_arg(ap, int);
@@ -57,6 +57,13 @@ const u_nullptr_t _u_types_parse(u_types_arg_t* arg, va_list ap) {
     case U_TYPES_ANY:
       arg->t_any = (u_any_t)va_arg(ap, u_any_t);
       return arg->t_any;
+    case U_TYPES_C_STR:
+      arg->t_c_str = (u_c_str_t)va_arg(ap, u_c_str_t);
+      return arg->t_c_str;
+
+    case U_TYPES_STR:
+      arg->t_str = (u_str_t)va_arg(ap, u_str_t);
+      return arg->t_str;
     case U_TYPES_NONE:
     default:
       return NULL;

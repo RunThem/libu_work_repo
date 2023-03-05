@@ -8,7 +8,7 @@ set_xmakever('2.6.1')
 set_version('0.0.1')
 
 -- add_build_modes
-add_rules('mode.release', 'mode.debug')
+add_rules('mode.debug')
 
 -- set warning all as error
 -- set_warnings('all', 'error')
@@ -23,8 +23,6 @@ add_defines('__STDC_VERSION__=201710L+1')
 if is_mode('debug') then
   add_cflags('-pg')
   add_undefines('NDEBUG')
-elseif is_mode('release') then
-  add_defines('NDEBUG')
 end
 
 -- include project sources
@@ -44,7 +42,7 @@ target('demo', function()
   add_files('demo.c')
   add_deps('u')
 
-  add_packages('mini-unit-test')
+  add_packages('mini-unit-test', 'mimalloc')
 end)
 
 target('test', function()

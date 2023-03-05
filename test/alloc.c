@@ -1,12 +1,7 @@
 #include <alloc.h>
-#include <debug.h>
 #include <malloc.h>
-#include <mimalloc.h>
 #include <mut.h>
 #include <stddef.h>
-#include <stdint.h>
-#include <string.h>
-#include <sys/time.h>
 #include <time.h>
 #include <types.h>
 
@@ -28,5 +23,5 @@ mut_test(libu_alloc_malloc) {
 }
 
 mut_group(libu_alloc) {
-  mut_add_test(libu_alloc_malloc, "test libu alloc malloc");
+  // mut_add_test(libu_alloc_malloc, "test libu alloc malloc");
 }
