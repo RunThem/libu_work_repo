@@ -48,7 +48,7 @@ typedef long double u_f128_t;
 #define u_f64(v)  ((u_f64_t)(v))
 #define u_f128(v) ((u_f128_t)(v))
 
-typedef void* u_nullptr_t;
+typedef const void* u_nullptr_t;
 #define u_nullptr(v) ((u_nullptr_t)(v))
 
 typedef struct {
@@ -62,6 +62,11 @@ typedef struct {
   char buf[0];
 }* u_str_t;
 #define u_str(v) ((u_str_t)(v))
+
+typedef struct {
+  u_u8_t buf[0];
+}* u_buf_t;
+#define u_buf(v) ((u_buf_t)(v))
 
 typedef enum {
   U_TYPES_BYTE = 1,
@@ -81,9 +86,11 @@ typedef enum {
   U_TYPES_F128,
   U_TYPES_NULLPTR,
   U_TYPES_ANY,
+
   U_TYPES_C_STR,
 
   U_TYPES_STR,
+  U_TYPES_BUF,
 
   U_TYPES_NONE = 127,
 } u_types_type_e;
@@ -109,9 +116,11 @@ typedef struct {
     u_f128_t t_f128;
     u_nullptr_t t_nullptr;
     u_any_t t_any;
+
     u_c_str_t t_c_str;
 
     u_str_t t_str;
+    u_buf_t t_buf;
   };
 } u_types_arg_t;
 
@@ -134,14 +143,16 @@ u_f64_t      : U_TYPES_F64,                                                     
 u_f128_t     : U_TYPES_F128,                                                                       \
 u_nullptr_t  : U_TYPES_NULLPTR,                                                                    \
 u_any_t      : U_TYPES_ANY,                                                                        \
+                                                                                                   \
 u_c_str_t    : U_TYPES_C_STR,                                                                      \
                                                                                                    \
 u_str_t      : U_TYPES_STR,                                                                        \
+u_buf_t      : U_TYPES_BUF,                                                                        \
                                                                                                    \
 default      : U_TYPES_NONE)
 /* clang-format on */
 
-const u_nullptr_t u_types_parse(u_types_arg_t* arg, va_list ap);
+u_nullptr_t u_types_parse(u_types_arg_t* arg, va_list ap, size_t* size);
 
 //#define u_types_parse(p, t, a)                                                                     \
 //  do {                                                                                             \

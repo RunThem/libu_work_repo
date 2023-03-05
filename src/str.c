@@ -21,7 +21,7 @@ u_str_t u_str_create(size_t size) {
     size = U_STR_DEFAULT_LENGTH;
   }
 
-  dbg_alloc_if(str = u_zalloc(u_str_size + size + 1));
+  dbg_alloc_if(str = (struct u_str*)u_zalloc(u_str_size + size + 1));
 
   str->alloc = size;
 
@@ -34,7 +34,6 @@ u_str_t u_str_create_from(u_c_str_t c_str) {
   size_t str_size;
   size_t alloc_size;
   struct u_str* str = NULL;
-  u_str_t _str      = NULL;
 
   dbg_return_if(c_str == NULL, NULL);
 
@@ -42,7 +41,7 @@ u_str_t u_str_create_from(u_c_str_t c_str) {
   alloc_size =
       (str_size < U_STR_DEFAULT_LENGTH) ? U_STR_DEFAULT_LENGTH : u_misc_align_2pow(str_size);
 
-  dbg_alloc_if(str = u_zalloc(u_str_size + alloc_size + 1));
+  dbg_alloc_if(str = (struct u_str*)u_zalloc(u_str_size + alloc_size + 1));
 
   strncpy(str->buf, c_str, str_size);
 
@@ -87,7 +86,7 @@ int u_str_resize(u_str_t* s, size_t size) {
 
   str = container_of(*s, struct u_str, buf);
 
-  dbg_alloc_if(str = u_realloc(str, u_str_size + size + 1));
+  dbg_alloc_if(str = (struct u_str*)u_realloc(str, u_str_size + size + 1));
 
   str->alloc = size;
   *s         = (u_str_t)str->buf;
@@ -95,6 +94,21 @@ int u_str_resize(u_str_t* s, size_t size) {
   return 0;
 err:
   return ~0;
+}
+
+u_str_t u_str_copy(u_str_t s) {
+  u_str_t str = NULL;
+
+  dbg_return_if(s == NULL, NULL);
+
+  dbg_alloc_if(str = u_str_create(u_str_alloc(s)));
+
+  strncpy(str->buf, s->buf, u_str_len(s));
+  container_of(str, struct u_str, buf)->len = u_str_len(s);
+
+  return str;
+  err:
+  return NULL;
 }
 
 int _u_str_cat(u_str_t* s, u_types_type_e type, ...) {
@@ -109,20 +123,10 @@ int _u_str_cat(u_str_t* s, u_types_type_e type, ...) {
 
   dbg_return_if(s == NULL, ~0);
   dbg_return_if(*s == NULL, ~0);
-  dbg_return_if(type == U_TYPES_NONE, ~0);
+  dbg_return_if(type != U_TYPES_BYTE && type != U_TYPES_C_STR && type != U_TYPES_STR, ~0);
 
   va_start(ap, type);
-  dbg_alloc_if(ptr = u_types_parse(&arg, ap));
-
-  if (type == U_TYPES_BYTE) {
-    str_size = 1;
-  } else if (type == U_TYPES_C_STR) {
-    str_size = strlen(arg.t_c_str);
-  } else if (type == U_TYPES_STR) {
-    str_size = u_str_len(arg.t_str);
-  } else {
-    dbg_err("type is %d", type);
-  }
+  dbg_alloc_if(ptr = u_types_parse(&arg, ap, &str_size));
 
   if (str_size > u_str_free(*s)) {
     alloc_size = u_misc_align_2pow(str_size + u_str_len(*s));
@@ -141,19 +145,4 @@ err:
   va_end(ap);
 
   return ~0;
-}
-
-u_str_t u_str_copy(u_str_t s) {
-  u_str_t str = NULL;
-
-  dbg_return_if(s == NULL, NULL);
-
-  dbg_alloc_if(str = u_str_create(u_str_alloc(s)));
-
-  strncpy(str->buf, s->buf, u_str_len(s));
-  container_of(str, struct u_str, buf)->len = u_str_len(s);
-
-  return str;
-err:
-  return NULL;
 }

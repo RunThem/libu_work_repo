@@ -15,7 +15,7 @@ mut_test(libu_types_base_type) {
   u_u64_t t_u64         = 1;
   u_i128_t t_i128       = -1;
   u_u128_t t_u128       = 1;
-  u_f32_t t_f32         = 0.1;
+  u_f32_t t_f32         = 0.1f;
   u_f64_t t_f64         = 0.1;
   u_f128_t t_f128       = 0.1;
   u_nullptr_t t_nullptr = &t_nullptr;
