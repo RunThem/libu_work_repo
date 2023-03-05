@@ -182,6 +182,34 @@ mut_test(libu_str_cat_of_str) {
   }
 }
 
+mut_test(libu_str_copy) {
+  u_str_t str = NULL;
+
+  struct {
+    char* str;
+  } tbl[] = {
+      {"hello"},
+      {"hello world"},
+      {"hello world wor"},
+      {"hello world wor"},
+      {"hello world worl"},
+      {"hello world worl"},
+  };
+
+  for (size_t i = 0; i < sizeof(tbl) / sizeof(tbl[0]); i++) {
+    str = u_str_create_from(tbl[i].str);
+
+    u_str_t str1 = u_str_copy(str);
+
+    mut_equal(u_str_len(str1), u_str_len(str));
+    mut_equal(u_str_alloc(str1), u_str_alloc(str));
+
+    mut_equal(str1->buf, str->buf);
+
+    u_str_clean(str1);
+    u_str_clean(str);
+  }
+}
 mut_group(libu_str) {
 
   mut_add_test(libu_str_create, "test libu u_str_create");
@@ -190,4 +218,5 @@ mut_group(libu_str) {
   mut_add_test(libu_str_cat_of_char, "test libu u_str_cat of char");
   mut_add_test(libu_str_cat_of_c_str, "test libu u_str_cat of c string");
   mut_add_test(libu_str_cat_of_str, "test libu u_str_cat of string");
+  mut_add_test(libu_str_copy, "test libu u_str_copy");
 }

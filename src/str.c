@@ -16,7 +16,6 @@ struct u_str {
 
 u_str_t u_str_create(size_t size) {
   struct u_str* str = NULL;
-  u_str_t _str      = NULL;
 
   if (size < U_STR_DEFAULT_LENGTH) {
     size = U_STR_DEFAULT_LENGTH;
@@ -25,9 +24,8 @@ u_str_t u_str_create(size_t size) {
   dbg_alloc_if(str = u_zalloc(u_str_size + size + 1));
 
   str->alloc = size;
-  _str       = (u_str_t)str->buf;
 
-  return _str;
+  return (u_str_t)str->buf;
 err:
   return NULL;
 }
@@ -50,9 +48,8 @@ u_str_t u_str_create_from(u_c_str_t c_str) {
 
   str->len   = str_size;
   str->alloc = alloc_size;
-  _str       = (u_str_t)str->buf;
 
-  return _str;
+  return (u_str_t)str->buf;
 err:
   return NULL;
 }
@@ -101,7 +98,6 @@ err:
 }
 
 int _u_str_cat(u_str_t* s, u_types_type_e type, ...) {
-  int ret = 0;
   size_t str_size;
   size_t alloc_size;
 
@@ -145,4 +141,19 @@ err:
   va_end(ap);
 
   return ~0;
+}
+
+u_str_t u_str_copy(u_str_t s) {
+  u_str_t str = NULL;
+
+  dbg_return_if(s == NULL, NULL);
+
+  dbg_alloc_if(str = u_str_create(u_str_alloc(s)));
+
+  strncpy(str->buf, s->buf, u_str_len(s));
+  container_of(str, struct u_str, buf)->len = u_str_len(s);
+
+  return str;
+err:
+  return NULL;
 }

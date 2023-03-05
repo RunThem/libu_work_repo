@@ -28,6 +28,8 @@ int u_str_resize(u_str_t* s, size_t size);
 int _u_str_cat(u_str_t* s, u_types_type_e type, ...);
 #define u_str_cat(s, v) _u_str_cat(s, u_types_of(v), v)
 
+u_str_t u_str_copy(u_str_t s);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
