@@ -26,8 +26,7 @@ size_t u_buf_free(u_buf_t b);
 int _u_buf_write(u_buf_t* b, u_types_type_e type, ...);
 #define u_buf_write(b, v, ...) _u_buf_write(b, u_types_of(v), v, ##__VA_ARGS__)
 
-int _u_buf_read(u_buf_t b, u_types_type_e type, ...);
-#define u_buf_read(b, v, ...) _u_buf_read(b, u_types_of(v), v, ##__VA_ARGS__)
+int u_buf_read(u_buf_t b, u_any_t ptr, size_t size);
 
 #ifdef __cplusplus
 } /* extern "C" */
