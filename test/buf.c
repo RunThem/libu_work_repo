@@ -1,11 +1,11 @@
 /**
  * Created by iccy on 23-3-5.
  */
-#include <mut.h>
 #include <buf.h>
+#include <mut.h>
 
 mut_test(libu_buf_create) {
-  u_str_t buf = NULL;
+  u_buf_t buf = NULL;
 
   struct {
     int n;
@@ -25,12 +25,13 @@ mut_test(libu_buf_create) {
     mut_assert(buf != NULL);
 
     mut_equal(0, u_buf_len(buf));
+    mut_equal(tbl[i].n, u_buf_alloc(buf));
+    mut_equal(u_buf_free(buf), u_buf_alloc(buf));
 
     u_buf_clean(buf);
   }
 }
 
 mut_group(libu_buf) {
-
   mut_add_test(libu_buf_create, "test libu u_buf_create");
 }
