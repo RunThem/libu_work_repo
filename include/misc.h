@@ -15,6 +15,8 @@ extern "C" {
 #define container_of(ptr, type, member) ((type*)(((u_u8_t*)(ptr)) - (offsetof(type, member))))
 #define align_of(addr, size)            (((addr) + (size)-1) & (~((size)-1)))
 
+#define array_size(a) (sizeof(a) / sizeof(a[0]))
+
 u_u64_t u_misc_align_2pow(u_u64_t n);
 
 #ifdef __cplusplus

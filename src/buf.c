@@ -119,7 +119,7 @@ int _u_buf_read(u_buf_t b, u_types_type_e type, ...) {
   struct u_buf* buf = NULL;
 
   dbg_return_if(b == NULL, ~0);
-  dbg_return_if(type == U_TYPES_NONE, ~0);
+  dbg_return_if(type != U_TYPES_ANY, ~0);
 
   va_start(ap, type);
   dbg_alloc_if(ptr = (u_u8_t*)u_types_parse(&arg, ap, &item_size));
