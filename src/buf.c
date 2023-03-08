@@ -109,18 +109,34 @@ err:
   return ~0;
 }
 
-int u_buf_read(u_buf_t b, u_any_t ptr, size_t size) {
+int _u_buf_read(u_buf_t b, u_types_type_e type, ...) {
+  size_t item_size;
+
+  va_list ap;
+  u_types_arg_t arg = {.type = type};
+
+  u_nullptr_t ptr   = NULL;
   struct u_buf* buf = NULL;
 
   dbg_return_if(b == NULL, ~0);
-  dbg_return_if(ptr == NULL, ~0);
-  dbg_return_if(u_buf_len(b) < size, ~0);
+  dbg_return_if(type == U_TYPES_NONE, ~0);
+
+  va_start(ap, type);
+  dbg_alloc_if(ptr = u_types_parse(&arg, ap, &item_size));
+
+  dbg_err_if(item_size > u_buf_len(b));
 
   buf = container_of(b, struct u_buf, buf);
 
-  memcpy(ptr, &buf->buf[buf->len - size], size);
+  memcpy((u_u8_t*)ptr, &buf->buf[buf->len - item_size], item_size);
 
-  buf->len -= size;
+  buf->len -= item_size;
+
+  va_end(ap);
 
   return 0;
+err:
+  va_end(ap);
+
+  return ~0;
 }

@@ -32,6 +32,13 @@ mut_test(libu_buf_create) {
   }
 }
 
+mut_test(libu_buf_write) {
+  u_buf_t buf = u_buf_create(10);
+
+
+}
+
 mut_group(libu_buf) {
   mut_add_test(libu_buf_create, "test libu u_buf_create");
+  mut_add_test(libu_buf_write, "test libu u_buf_write");
 }
