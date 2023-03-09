@@ -4,99 +4,71 @@
 
 #include <buf.h>
 #include <debug.h>
+#include <str.h>
 #include <types.h>
 #include <vec.h>
 
+#define u_buf_print(v)                                                                             \
+  do {                                                                                             \
+    u_con("len is %ld, alloc is %ld, free is %ld", u_buf_len(v), u_buf_alloc(v), u_buf_free(v));   \
+  } while (0)
+
 int main() {
-  u_vec_t vec = u_vec_create(10, sizeof(u_i32_t));
 
-  u_con("itsize is %ld", u_vec_itsize(vec));
+  u_byte_t a = '9';
+  u_i16_t b  = 1322;
+  u_i32_t c  = 9999;
+  u_f128_t d = 234.12;
 
-  u_con("len is %ld", u_vec_len(vec));
-  u_con("alloc is %ld", u_vec_alloc(vec));
-  u_con("free is %ld", u_vec_free(vec));
+  u_u64_t arr[] = {3, 2, 4, 43};
 
-  u_vec_push(&vec, 32);
+  /* size: 1 + 2 + 4 + 16 + 32 */
 
-  u_con("len is %ld", u_vec_len(vec));
-  u_con("alloc is %ld", u_vec_alloc(vec));
-  u_con("free is %ld", u_vec_free(vec));
+  u_buf_t buf = u_buf_create(10);
 
-  u_con("%d", ((u_i32_t*)vec)[0]);
+  u_buf_push(&buf, a);
+  u_buf_print(buf);
+  u_buf_push(&buf, b);
+  u_buf_print(buf);
+  u_buf_push(&buf, c);
+  u_buf_print(buf);
+  u_buf_push(&buf, d);
+  u_buf_print(buf);
+  u_buf_push(&buf, u_any(arr), sizeof(arr));
+  u_buf_print(buf);
 
-  u_vec_push(&vec, 123);
-
-  u_con("len is %ld", u_vec_len(vec));
-  u_con("alloc is %ld", u_vec_alloc(vec));
-  u_con("free is %ld", u_vec_free(vec));
-
-  for (size_t i = 0; i < u_vec_len(vec); i++) {
-    u_con("%d", ((u_i32_t*)vec)[i]);
+  for (int i = 0; i < u_buf_len(buf); ++i) {
+    printf("%03d ", ((u_u8_t*)buf)[i]);
   }
+  printf("\n");
 
-  u_vec_push(&vec, 238923);
-
-  u_con("len is %ld", u_vec_len(vec));
-  u_con("alloc is %ld", u_vec_alloc(vec));
-  u_con("free is %ld", u_vec_free(vec));
-
-  for (size_t i = 0; i < u_vec_len(vec); i++) {
-    u_con("%d", ((u_i32_t*)vec)[i]);
+  u_buf_insert(&buf, 2, 55);
+  u_buf_print(buf);
+  for (int i = 0; i < u_buf_len(buf); ++i) {
+    printf("%03d ", ((u_u8_t*)buf)[i]);
   }
+  printf("\n");
 
-  u_vec_insert(&vec, 0, 233);
+  u_buf_remove(buf, 2, sizeof(int));
 
-  u_con("len is %ld", u_vec_len(vec));
-  u_con("alloc is %ld", u_vec_alloc(vec));
-  u_con("free is %ld", u_vec_free(vec));
-
-  for (size_t i = 0; i < u_vec_len(vec); i++) {
-    u_con("%d", ((u_i32_t*)vec)[i]);
+  u_buf_print(buf);
+  for (int i = 0; i < u_buf_len(buf); ++i) {
+    printf("%03d ", ((u_u8_t*)buf)[i]);
   }
+  printf("\n");
 
-  u_con("");
+  u_f128_t f = 0;
 
-  int m = 0;
+  u_buf_at(buf, 7, &f);
+  u_con("%Lf", f);
 
-  u_vec_at(vec, 2, &m);
-  u_con("%d", m);
+  u_buf_t _buf = u_buf_copy(buf);
 
-  u_vec_for(vec, m) {
-    u_con("%d", m);
+  u_buf_print(_buf);
+  for (int i = 0; i < u_buf_len(_buf); ++i) {
+    printf("%03d ", ((u_u8_t*)_buf)[i]);
   }
-
-  u_vec_replace(vec, 1, 100);
-
-  u_con("");
-  u_vec_for(vec, m) {
-    u_con("%d", m);
-  }
-
-  u_con("%d", u_vec_empty(vec));
-
-  u_vec_t vec1 = u_vec_copy(vec);
-
-  u_con("len is %ld", u_vec_len(vec1));
-  u_con("alloc is %ld", u_vec_alloc(vec1));
-  u_con("free is %ld", u_vec_free(vec1));
-  u_con("itsize is %ld", u_vec_itsize(vec1));
-
-  u_vec_for(vec1, m) {
-    u_con("%d", m);
-  }
-
-  int* ptr = NULL;
-
-  u_vec_scan(vec1, ptr, int) {
-    u_con("%p, %d", ptr, *ptr);
-    *ptr = *ptr * 2;
-  }
-
-  u_vec_for(vec1, m) {
-    u_con("%d", m);
-  }
-
-  u_vec_clean(vec);
+  printf("\n");
 
   return 0;
 }
