@@ -60,8 +60,11 @@ typedef struct {
 }* u_str_t;
 #define u_str(v) ((u_str_t)(v))
 
-typedef struct u_buf* u_buf_t;
+typedef struct u_buf_t* u_buf_t;
 #define u_buf(v) ((u_buf_t)(v))
+
+typedef struct u_vec_t* u_vec_t;
+#define u_vec(v) ((u_vec_t)(v))
 
 typedef enum {
   U_TYPES_BYTE = 1,

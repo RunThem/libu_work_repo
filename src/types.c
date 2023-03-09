@@ -2,6 +2,7 @@
  * Copyright (c) 2023 by RunThem <iccy.fun@outlook.com> - All rights reserved.
  */
 
+#include <buf.h>
 #include <str.h>
 #include <string.h>
 #include <types.h>
@@ -132,6 +133,10 @@ u_nullptr_t u_types_parse(u_types_arg_t* arg, va_list ap, size_t* size) {
       arg->p = (u_str_t)va_arg(ap, u_str_t);
       *size  = u_str_len(u_str(arg->p));
       return arg->p;
+    case U_TYPES_BUF:
+      arg->p = (u_buf_t)va_arg(ap, u_buf_t);
+      *size  = u_buf_len(u_buf(arg->p));
+      return arg->p;
 
     case U_TYPES_NONE:
     default:
@@ -194,6 +199,7 @@ void u_types_print(u_types_arg_t* arg, FILE* out) {
 }
 
 u_bool_t u_types_equal(u_types_arg_t* arg, u_types_arg_t* _arg) {
+  size_t size_1, size_2;
   if (arg->type != _arg->type) {
     return false;
   }
@@ -233,9 +239,21 @@ u_bool_t u_types_equal(u_types_arg_t* arg, u_types_arg_t* _arg) {
     case U_TYPES_ANY:
       return arg->p == _arg->p;
     case U_TYPES_C_STR:
-      return strcmp(arg->p, _arg->p);
+      size_1 = strlen(arg->p);
+      size_2 = strlen(_arg->p);
+      if (size_1 != size_2) {
+        return false;
+      }
+
+      return strncmp(arg->p, _arg->p, size_1);
     case U_TYPES_STR:
-      return strncmp(arg->p, _arg->p, u_str_len(u_str(arg->p)));
+      size_1 = u_str_len(u_str(arg->p));
+      size_2 = u_str_len(u_str(_arg->p));
+      if (size_1 != size_2) {
+        return false;
+      }
+
+      return strncmp(arg->p, _arg->p, size_1);
     case U_TYPES_NONE:
     default:
       break;

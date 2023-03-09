@@ -92,45 +92,45 @@ mut_test(libu_types_base_type) {
   mut_equal(U_TYPES_C_STR,    u_types_of(t_c_str));
   mut_equal(U_TYPES_C_STR,    u_types_of(u_c_str("hello libu")));
 
-  /* clang-format on */
 #define test_types_func(t, s, v, ...)                                                              \
   do {                                                                                             \
     printf("line %d ", __LINE__);                                                                  \
     test_types(result, t, s, u_types_of(v), v, ##__VA_ARGS__);                                     \
   } while (0)
 
-  test_types_func(U_TYPES_BYTE, 1, u_byte('3'));
-  test_types_func(U_TYPES_BOOL, 1, u_bool(true));
-  test_types_func(U_TYPES_I8, 1, u_i8(-1));
-  test_types_func(U_TYPES_U8, 1, u_u8(1));
-  test_types_func(U_TYPES_I16, 2, u_i16(-2));
-  test_types_func(U_TYPES_U16, 2, u_u16(2));
-  test_types_func(U_TYPES_I32, 4, u_i32(-3));
-  test_types_func(U_TYPES_U32, 4, u_u32(3));
-  test_types_func(U_TYPES_I64, 8, u_i64(-4));
-  test_types_func(U_TYPES_U64, 8, u_u64(4));
-  test_types_func(U_TYPES_F32, 4, u_f32(0.1));
-  test_types_func(U_TYPES_F64, 8, u_f64(0.2));
-  test_types_func(U_TYPES_F128, 16, u_f128(0.3));
+  test_types_func(U_TYPES_BYTE,   1,  u_byte('3'));
+  test_types_func(U_TYPES_BOOL,   1,  u_bool(true));
+  test_types_func(U_TYPES_I8,     1,  u_i8(-1));
+  test_types_func(U_TYPES_U8,     1,  u_u8(1));
+  test_types_func(U_TYPES_I16,    2,  u_i16(-2));
+  test_types_func(U_TYPES_U16,    2,  u_u16(2));
+  test_types_func(U_TYPES_I32,    4,  u_i32(-3));
+  test_types_func(U_TYPES_U32,    4,  u_u32(3));
+  test_types_func(U_TYPES_I64,    8,  u_i64(-4));
+  test_types_func(U_TYPES_U64,    8,  u_u64(4));
+  test_types_func(U_TYPES_F32,    4,  u_f32(0.1));
+  test_types_func(U_TYPES_F64,    8,  u_f64(0.2));
+  test_types_func(U_TYPES_F128,   16, u_f128(0.3));
 
-  test_types_func(U_TYPES_BYTE_PTR, 8, &t_byte);
-  test_types_func(U_TYPES_BOOL_PTR, 8, &t_bool);
-  test_types_func(U_TYPES_I8_PTR, 8, &t_i8);
-  test_types_func(U_TYPES_U8_PTR, 8, &t_u8);
-  test_types_func(U_TYPES_I16_PTR, 8, &t_i16);
-  test_types_func(U_TYPES_U16_PTR, 8, &t_u16);
-  test_types_func(U_TYPES_I32_PTR, 8, &t_i32);
-  test_types_func(U_TYPES_U32_PTR, 8, &t_u32);
-  test_types_func(U_TYPES_I64_PTR, 8, &t_i64);
-  test_types_func(U_TYPES_U64_PTR, 8, &t_u64);
-  test_types_func(U_TYPES_F32_PTR, 8, &t_f32);
-  test_types_func(U_TYPES_F64_PTR, 8, &t_f64);
-  test_types_func(U_TYPES_F128_PTR, 8, &t_f128);
+  test_types_func(U_TYPES_BYTE_PTR,   1,  &t_byte);
+  test_types_func(U_TYPES_BOOL_PTR,   1,  &t_bool);
+  test_types_func(U_TYPES_I8_PTR,     1,  &t_i8);
+  test_types_func(U_TYPES_U8_PTR,     1,  &t_u8);
+  test_types_func(U_TYPES_I16_PTR,    2,  &t_i16);
+  test_types_func(U_TYPES_U16_PTR,    2,  &t_u16);
+  test_types_func(U_TYPES_I32_PTR,    4,  &t_i32);
+  test_types_func(U_TYPES_U32_PTR,    4,  &t_u32);
+  test_types_func(U_TYPES_I64_PTR,    8,  &t_i64);
+  test_types_func(U_TYPES_U64_PTR,    8,  &t_u64);
+  test_types_func(U_TYPES_F32_PTR,    4,  &t_f32);
+  test_types_func(U_TYPES_F64_PTR,    8,  &t_f64);
+  test_types_func(U_TYPES_F128_PTR,   16, &t_f128);
 
-  test_types_func(U_TYPES_NULLPTR, 8, t_nullptr);
-  test_types_func(U_TYPES_ANY, 1024, t_any, 1024);
+  test_types_func(U_TYPES_NULLPTR,    8,    t_nullptr);
+  test_types_func(U_TYPES_ANY,        1024, t_any, 1024);
 
   test_types_func(U_TYPES_C_STR, strlen(t_c_str), t_c_str);
+  /* clang-format on */
 
   mut_equal(32, sizeof(u_types_arg_t));
 }

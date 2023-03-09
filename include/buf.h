@@ -13,7 +13,7 @@ extern "C" {
 
 #ifndef U_BUF_DEFAULT_LENGTH
 #  define U_BUF_DEFAULT_LENGTH 16
-#endif
+#endif /* !U_BUF_DEFAULT_LENGTH */
 
 u_buf_t u_buf_create(size_t size);
 int u_buf_resize(u_buf_t* b, size_t size);

@@ -2,6 +2,7 @@
  * Created by iccy on 23-3-5.
  */
 #include <buf.h>
+#include <misc.h>
 #include <mut.h>
 
 mut_test(libu_buf_create) {
@@ -35,10 +36,62 @@ mut_test(libu_buf_create) {
 mut_test(libu_buf_write) {
   u_buf_t buf = u_buf_create(10);
 
+  u_buf_write(&buf, u_byte('2'));
+  u_buf_write(&buf, u_i16(32));
+  u_buf_write(&buf, u_i32(32));
+  u_buf_write(&buf, u_u32(32));
+  u_buf_write(&buf, u_i16(32));
+  u_buf_write(&buf, u_nullptr(&buf));
+  u_buf_write(&buf, u_i16(32));
+  u_buf_write(&buf, u_c_str("hello"));
 
+  u_i16_t a[] = {2, 3, 4, 2, 4, 2, 3, 41};
+
+  u_buf_write(&buf, u_any(a), sizeof(a));
+
+  mut_equal(1 + 2 + 4 + 4 + 2 + 8 + 2 + 5 + sizeof(a), u_buf_len(buf));
+  mut_equal(u_misc_align_2pow(1 + 2 + 4 + 4 + 2 + 8 + 2 + 5 + sizeof(a)), u_buf_alloc(buf));
+}
+
+mut_test(libu_buf_read) {
+  u_buf_t buf = u_buf_create(10);
+
+  u_buf_write(&buf, u_byte('2'));
+  u_buf_write(&buf, u_i16(32));
+  u_buf_write(&buf, u_i32(32));
+  u_buf_write(&buf, u_u32(32));
+  u_buf_write(&buf, u_i16(32));
+  u_buf_write(&buf, u_nullptr(&buf));
+  u_buf_write(&buf, u_i16(32));
+  u_buf_write(&buf, u_c_str("hello"));
+
+  u_i16_t a[] = {2, 3, 4, 2, 4, 2, 3, 41};
+
+  u_buf_write(&buf, u_any(a), sizeof(a));
+
+  mut_equal(1 + 2 + 4 + 4 + 2 + 8 + 2 + 5 + sizeof(a), u_buf_len(buf));
+  mut_equal(u_misc_align_2pow(1 + 2 + 4 + 4 + 2 + 8 + 2 + 5 + sizeof(a)), u_buf_alloc(buf));
+
+  u_i64_t n;
+
+  u_buf_read(buf, (u_i16_t*)&n);
+  mut_equal(1 + 2 + 4 + 4 + 2 + 8 + 2 + 5 + sizeof(a) - 2, u_buf_len(buf));
+
+  u_buf_read(buf, (u_u16_t*)&n);
+  mut_equal(1 + 2 + 4 + 4 + 2 + 8 + 2 + 5 + sizeof(a) - 2 - 2, u_buf_len(buf));
+
+  u_buf_read(buf, &n);
+  mut_equal(1 + 2 + 4 + 4 + 2 + 8 + 2 + 5 + sizeof(a) - 2 - 2 - 8, u_buf_len(buf));
+
+  u_i16_t b[3];
+
+  u_buf_read(buf, u_any(b), sizeof(b));
+
+  mut_equal(1 + 2 + 4 + 4 + 2 + 8 + 2 + 5 + sizeof(a) - 2 - 2 - 8 - sizeof(b), u_buf_len(buf));
 }
 
 mut_group(libu_buf) {
   mut_add_test(libu_buf_create, "test libu u_buf_create");
   mut_add_test(libu_buf_write, "test libu u_buf_write");
+  mut_add_test(libu_buf_read, "test libu u_buf_read");
 }

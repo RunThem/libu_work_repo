@@ -6,26 +6,27 @@
 #include <debug.h>
 #include <misc.h>
 
-struct u_buf {
+struct u_buf_t {
   size_t len;   /* used */
   size_t alloc; /* excluding the header and null terminator */
   u_u8_t buf[0];
 };
 
-#define u_buf_size (sizeof(struct u_buf))
+#define BUF_HEADER_SIZE  (sizeof(struct u_buf_t))
+#define CONTAINER_BUF(b) (container_of(b, struct u_buf_t, buf))
 
 u_buf_t u_buf_create(size_t size) {
-  struct u_buf* buf = NULL;
+  struct u_buf_t* buf = NULL;
 
   if (size < U_BUF_DEFAULT_LENGTH) {
     size = U_BUF_DEFAULT_LENGTH;
   }
 
-  dbg_alloc_if(buf = (struct u_buf*)u_zalloc(u_buf_size + size));
+  dbg_alloc_if(buf = (struct u_buf*)u_zalloc(BUF_HEADER_SIZE + size));
 
   buf->alloc = size;
 
-  return (u_buf_t)buf->buf;
+  return u_buf(buf->buf);
 err:
   return NULL;
 }
@@ -33,39 +34,39 @@ err:
 void u_buf_clean(u_buf_t b) {
   dbg_return_if(b == NULL, );
 
-  u_free(container_of(b, struct u_buf, buf));
+  u_free(CONTAINER_BUF(b));
 }
 
 size_t u_buf_len(u_buf_t b) {
   dbg_return_if(b == NULL, 0);
 
-  return container_of(b, struct u_buf, buf)->len;
+  return CONTAINER_BUF(b)->len;
 }
 
 size_t u_buf_alloc(u_buf_t b) {
   dbg_return_if(b == NULL, 0);
 
-  return container_of(b, struct u_buf, buf)->alloc;
+  return CONTAINER_BUF(b)->alloc;
 }
 size_t u_buf_free(u_buf_t b) {
   dbg_return_if(b == NULL, 0);
 
-  return u_buf_alloc(b) - u_buf_len(b);
+  return CONTAINER_BUF(b)->alloc - CONTAINER_BUF(b)->len;
 }
 
 int u_buf_resize(u_buf_t* b, size_t size) {
-  struct u_buf* buf = NULL;
+  struct u_buf_t* buf = NULL;
 
   dbg_return_if(b == NULL, ~0);
   dbg_return_if(*b == NULL, ~0);
   dbg_return_if(u_buf_alloc(*b) >= size, ~0);
 
-  buf = container_of(*b, struct u_buf, buf);
+  buf = CONTAINER_BUF(*b);
 
-  dbg_alloc_if(buf = (struct u_buf*)u_realloc(buf, u_buf_size + size));
+  dbg_alloc_if(buf = (struct u_buf*)u_realloc(buf, BUF_HEADER_SIZE + size));
 
   buf->alloc = size;
-  *b         = (u_buf_t)buf->buf;
+  *b         = u_buf(buf->buf);
 
   return 0;
 err:
@@ -79,8 +80,8 @@ int _u_buf_write(u_buf_t* b, u_types_type_e type, ...) {
   va_list ap;
   u_types_arg_t arg = {.type = type};
 
-  u_nullptr_t ptr   = NULL;
-  struct u_buf* buf = NULL;
+  u_nullptr_t ptr     = NULL;
+  struct u_buf_t* buf = NULL;
 
   dbg_return_if(b == NULL, ~0);
   dbg_return_if(*b == NULL, ~0);
@@ -94,7 +95,7 @@ int _u_buf_write(u_buf_t* b, u_types_type_e type, ...) {
     dbg_err_if(u_buf_resize(b, alloc_size) != 0);
   }
 
-  buf = container_of(*b, struct u_buf, buf);
+  buf = CONTAINER_BUF(*b);
 
   memcpy(&buf->buf[buf->len], ptr, item_size);
 
@@ -110,27 +111,27 @@ err:
 }
 
 int _u_buf_read(u_buf_t b, u_types_type_e type, ...) {
-  size_t item_size;
+  size_t size;
 
   va_list ap;
   u_types_arg_t arg = {.type = type};
 
-  u_nullptr_t ptr   = NULL;
-  struct u_buf* buf = NULL;
+  u_nullptr_t ptr     = NULL;
+  struct u_buf_t* buf = NULL;
 
   dbg_return_if(b == NULL, ~0);
   dbg_return_if(type == U_TYPES_NONE, ~0);
 
   va_start(ap, type);
-  dbg_alloc_if(ptr = u_types_parse(&arg, ap, &item_size));
+  dbg_alloc_if(ptr = u_types_parse(&arg, ap, &size));
 
-  dbg_err_if(item_size > u_buf_len(b));
+  dbg_err_if(size > u_buf_len(b));
 
-  buf = container_of(b, struct u_buf, buf);
+  buf = CONTAINER_BUF(b);
 
-  memcpy((u_u8_t*)ptr, &buf->buf[buf->len - item_size], item_size);
+  memcpy((u_u8_t*)ptr, &buf->buf[buf->len - size], size);
 
-  buf->len -= item_size;
+  buf->len -= size;
 
   va_end(ap);
 
