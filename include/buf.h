@@ -22,6 +22,7 @@ void u_buf_clean(u_buf_t b);
 size_t u_buf_len(u_buf_t b);
 size_t u_buf_alloc(u_buf_t b);
 size_t u_buf_free(u_buf_t b);
+u_bool_t u_buf_empty(u_buf_t b);
 
 int _u_buf_push(u_buf_t* b, u_types_type_e type, ...);
 #define u_buf_push(b, v, ...) _u_buf_push(b, u_types_of(v), v, ##__VA_ARGS__)

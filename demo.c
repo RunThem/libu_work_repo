@@ -4,71 +4,44 @@
 
 #include <buf.h>
 #include <debug.h>
+#include <misc.h>
 #include <str.h>
 #include <types.h>
 #include <vec.h>
 
-#define u_buf_print(v)                                                                             \
+#define u_str_debug(s)                                                                             \
   do {                                                                                             \
-    u_con("len is %ld, alloc is %ld, free is %ld", u_buf_len(v), u_buf_alloc(v), u_buf_free(v));   \
+    u_info("string len is %ld, alloc is %ld. \"%s\"",                                              \
+           u_str_len(s),                                                                           \
+           u_str_alloc(s),                                                                         \
+           u_str_cstr(s));                                                                         \
   } while (0)
 
 int main() {
+  u_str_t str = u_str_create_from(u_c_str(" hello, world"));
 
-  u_byte_t a = '9';
-  u_i16_t b  = 1322;
-  u_i32_t c  = 9999;
-  u_f128_t d = 234.12;
-
-  u_u64_t arr[] = {3, 2, 4, 43};
-
-  /* size: 1 + 2 + 4 + 16 + 32 */
-
-  u_buf_t buf = u_buf_create(10);
-
-  u_buf_push(&buf, a);
-  u_buf_print(buf);
-  u_buf_push(&buf, b);
-  u_buf_print(buf);
-  u_buf_push(&buf, c);
-  u_buf_print(buf);
-  u_buf_push(&buf, d);
-  u_buf_print(buf);
-  u_buf_push(&buf, u_any(arr), sizeof(arr));
-  u_buf_print(buf);
-
-  for (int i = 0; i < u_buf_len(buf); ++i) {
-    printf("%03d ", ((u_u8_t*)buf)[i]);
+  char c;
+  u_str_for(str, c) {
+    printf("'%c' ", c);
   }
   printf("\n");
 
-  u_buf_insert(&buf, 2, 55);
-  u_buf_print(buf);
-  for (int i = 0; i < u_buf_len(buf); ++i) {
-    printf("%03d ", ((u_u8_t*)buf)[i]);
-  }
-  printf("\n");
+  u_str_debug(str);
 
-  u_buf_remove(buf, 2, sizeof(int));
+  size_t idx = 6;
 
-  u_buf_print(buf);
-  for (int i = 0; i < u_buf_len(buf); ++i) {
-    printf("%03d ", ((u_u8_t*)buf)[i]);
-  }
-  printf("\n");
+  u_str_remove(str, idx, sizeof(char));
+  u_str_insert(&str, idx, u_c_str(" {love}"));
 
-  u_f128_t f = 0;
+  u_str_debug(str);
 
-  u_buf_at(buf, 7, &f);
-  u_con("%Lf", f);
+  u_str_t _str = u_str_copy(str);
 
-  u_buf_t _buf = u_buf_copy(buf);
+  u_str_debug(_str);
 
-  u_buf_print(_buf);
-  for (int i = 0; i < u_buf_len(_buf); ++i) {
-    printf("%03d ", ((u_u8_t*)_buf)[i]);
-  }
-  printf("\n");
+  u_con("%d", u_misc_align_2pow(16));
+
+  u_con("%d", u_str_compare(str, u_c_str(" hello {love} world")));
 
   return 0;
 }

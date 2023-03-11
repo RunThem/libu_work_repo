@@ -16,9 +16,9 @@ mut_test(libu_buf_create) {
       {16,   3   },
       {16,   7   },
       {16,   10  },
-      {100,  100 },
-      {129,  129 },
-      {1025, 1025},
+      {128,  100 },
+      {256,  129 },
+      {2048, 1025},
   };
   for (size_t i = 0; i < sizeof(tbl) / sizeof(tbl[0]); i++) {
     buf = u_buf_create(tbl[i].m);

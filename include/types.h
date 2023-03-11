@@ -55,9 +55,7 @@ typedef struct {
 typedef const char* u_c_str_t;
 #define u_c_str(v) ((u_c_str_t)(v))
 
-typedef struct {
-  char buf[0];
-}* u_str_t;
+typedef struct u_str_t* u_str_t;
 #define u_str(v) ((u_str_t)(v))
 
 typedef struct u_buf_t* u_buf_t;

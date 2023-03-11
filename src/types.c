@@ -18,7 +18,7 @@ u_nullptr_t u_types_parse(u_types_arg_t* arg, va_list ap, size_t* size) {
       *size  = sizeof(u_bool_t);
       return &arg->i;
     case U_TYPES_I8:
-      arg->i = (u_i8_t)va_arg(ap, u_i32_t);
+      arg->i = (u_i8_t)va_arg(ap, u_u32_t);
       *size  = sizeof(u_i8_t);
       return &arg->i;
     case U_TYPES_U8:
@@ -190,7 +190,7 @@ void u_types_print(u_types_arg_t* arg, FILE* out) {
       fprintf(out, "\"%s\"", u_c_str(arg->p));
       break;
     case U_TYPES_STR:
-      fprintf(out, "\"%s\"", u_str(arg->p)->buf);
+      // fprintf(out, "\"%s\"", u_c_str(arg->p));
       break;
     case U_TYPES_NONE:
     default:
@@ -216,7 +216,6 @@ u_bool_t u_types_equal(u_types_arg_t* arg, u_types_arg_t* _arg) {
     case U_TYPES_U32:
     case U_TYPES_U64:
       return arg->i == _arg->i;
-      break;
     case U_TYPES_F32:
     case U_TYPES_F64:
     case U_TYPES_F128:
@@ -258,4 +257,5 @@ u_bool_t u_types_equal(u_types_arg_t* arg, u_types_arg_t* _arg) {
     default:
       break;
   }
+  return false;
 }

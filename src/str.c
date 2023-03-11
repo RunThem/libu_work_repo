@@ -22,7 +22,9 @@ u_str_t u_str_create(size_t size) {
     size = U_STR_DEFAULT_LENGTH;
   }
 
-  dbg_alloc_if(str = (struct u_str*)u_zalloc(STR_HEADER_SIZE + size + 1));
+  size = u_misc_align_2pow(size);
+
+  dbg_alloc_if(str = (struct u_str_t*)u_zalloc(STR_HEADER_SIZE + size + 1));
 
   str->alloc = size;
 
@@ -32,21 +34,25 @@ err:
 }
 
 u_str_t u_str_create_from(u_c_str_t c_str) {
-  size_t str_size;
+  size_t size;
   size_t alloc_size;
   struct u_str_t* str = NULL;
 
   dbg_return_if(c_str == NULL, NULL);
 
-  str_size = strlen(c_str);
-  alloc_size =
-      (str_size < U_STR_DEFAULT_LENGTH) ? U_STR_DEFAULT_LENGTH : u_misc_align_2pow(str_size);
+  alloc_size = size = strlen(c_str);
 
-  dbg_alloc_if(str = (struct u_str*)u_zalloc(STR_HEADER_SIZE + alloc_size + 1));
+  if (size < U_STR_DEFAULT_LENGTH) {
+    alloc_size = U_STR_DEFAULT_LENGTH;
+  }
 
-  strncpy(str->buf, c_str, str_size);
+  alloc_size = u_misc_align_2pow(alloc_size);
 
-  str->len   = str_size;
+  dbg_alloc_if(str = (struct u_str_t*)u_zalloc(STR_HEADER_SIZE + alloc_size + 1));
+
+  strncpy(str->buf, c_str, size);
+
+  str->len   = size;
   str->alloc = alloc_size;
 
   return u_str(str->buf);
@@ -78,18 +84,27 @@ size_t u_str_free(u_str_t s) {
   return CONTAINER_STR(s)->alloc - CONTAINER_STR(s)->len;
 }
 
+u_bool_t u_str_empty(u_str_t s) {
+  dbg_return_if(s == NULL, true);
+
+  return !CONTAINER_STR(s)->len;
+}
+
 int u_str_resize(u_str_t* s, size_t size) {
+  size_t alloc_size;
   struct u_str_t* str = NULL;
 
   dbg_return_if(s == NULL, ~0);
   dbg_return_if(*s == NULL, ~0);
   dbg_return_if(u_str_alloc(*s) >= size, ~0);
 
+  alloc_size = u_misc_align_2pow(size);
+
   str = CONTAINER_STR(*s);
 
-  dbg_alloc_if(str = (struct u_str*)u_realloc(str, STR_HEADER_SIZE + size + 1));
+  dbg_alloc_if(str = (struct u_str_t*)u_realloc(str, STR_HEADER_SIZE + alloc_size + 1));
 
-  str->alloc = size;
+  str->alloc = alloc_size;
   *s         = u_str(str->buf);
 
   return 0;
@@ -97,24 +112,8 @@ err:
   return ~0;
 }
 
-u_str_t u_str_copy(u_str_t s) {
-  u_str_t str = NULL;
-
-  dbg_return_if(s == NULL, NULL);
-
-  dbg_alloc_if(str = u_str_create(u_str_alloc(s)));
-
-  strncpy(str->buf, s->buf, u_str_len(s));
-  CONTAINER_STR(str)->len = u_str_len(s);
-
-  return str;
-err:
-  return NULL;
-}
-
 int _u_str_cat(u_str_t* s, u_types_type_e type, ...) {
-  size_t str_size;
-  size_t alloc_size;
+  size_t itsize;
 
   va_list ap;
   u_types_arg_t arg = {.type = type};
@@ -127,17 +126,16 @@ int _u_str_cat(u_str_t* s, u_types_type_e type, ...) {
   dbg_return_if(type != U_TYPES_BYTE && type != U_TYPES_C_STR && type != U_TYPES_STR, ~0);
 
   va_start(ap, type);
-  dbg_alloc_if(ptr = u_types_parse(&arg, ap, &str_size));
+  dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
 
-  if (str_size > u_str_free(*s)) {
-    alloc_size = u_misc_align_2pow(str_size + u_str_len(*s));
-    dbg_err_if(u_str_resize(s, alloc_size) != 0);
+  if (itsize > u_str_free(*s)) {
+    dbg_err_if(u_str_resize(s, itsize + u_str_alloc(*s)) != 0);
   }
 
   str = CONTAINER_STR(*s);
 
-  strncpy(&str->buf[str->len], ptr, str_size);
-  str->len += str_size;
+  strncpy(&str->buf[str->len], ptr, itsize);
+  str->len += itsize;
 
   va_end(ap);
 
@@ -146,4 +144,119 @@ err:
   va_end(ap);
 
   return ~0;
+}
+
+int _u_str_insert(u_str_t* s, size_t idx, u_types_type_e type, ...) {
+  size_t itsize;
+
+  va_list ap;
+  u_types_arg_t arg = {.type = type};
+
+  u_nullptr_t ptr     = NULL;
+  struct u_str_t* str = NULL;
+
+  dbg_return_if(s == NULL, ~0);
+  dbg_return_if(*s == NULL, ~0);
+  dbg_return_if(idx >= u_str_len(*s), ~0);
+  dbg_return_if(type != U_TYPES_BYTE && type != U_TYPES_C_STR && type != U_TYPES_STR, ~0);
+
+  va_start(ap, type);
+  dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
+
+  if (itsize > u_str_free(*s)) {
+    dbg_err_if(u_str_resize(s, itsize + u_str_alloc(*s)) != 0);
+  }
+
+  str = CONTAINER_STR(*s);
+
+  memmove(&str->buf[idx + itsize], &str->buf[idx], str->len - idx);
+  memcpy(&str->buf[idx], ptr, itsize);
+
+  str->len += itsize;
+
+  va_end(ap);
+
+  return 0;
+err:
+  va_end(ap);
+
+  return ~0;
+}
+
+char u_str_at(u_str_t s, size_t idx) {
+  dbg_return_if(s == NULL, '\0');
+  dbg_return_if(idx >= u_str_len(s), '\0');
+
+  return CONTAINER_STR(s)->buf[idx];
+}
+
+int u_str_remove(u_str_t s, size_t idx, size_t itsize) {
+  struct u_str_t* str = NULL;
+
+  dbg_return_if(s == NULL, ~0);
+  dbg_return_if(idx >= u_str_len(s), ~0);
+  dbg_return_if((idx + itsize) > u_str_len(s), ~0);
+
+  str = CONTAINER_STR(s);
+
+  u_dbg("%d, %d", idx, itsize);
+  u_dbg("%d", str->len);
+
+  memmove(&str->buf[idx], &str->buf[idx + itsize], str->len - idx - itsize);
+
+  str->len -= itsize;
+
+  return 0;
+}
+
+u_c_str_t u_str_cstr(u_str_t s) {
+  dbg_return_if(s == NULL, NULL);
+  dbg_return_if(u_str_len(s) == 0, NULL);
+
+  return u_c_str(CONTAINER_STR(s)->buf);
+}
+
+u_str_t u_str_copy(u_str_t s) {
+  struct u_str_t* str  = NULL;
+  struct u_str_t* _str = NULL;
+
+  dbg_return_if(s == NULL, NULL);
+
+  _str = CONTAINER_STR(s);
+
+  dbg_alloc_if(str = (struct u_str_t*)u_zalloc(STR_HEADER_SIZE + _str->alloc));
+
+  memcpy(str, _str, STR_HEADER_SIZE + _str->alloc);
+
+  return u_str(str->buf);
+err:
+
+  return NULL;
+}
+
+u_bool_t _u_str_compare(u_str_t s, u_types_type_e type, ...) {
+  size_t itsize;
+
+  va_list ap;
+  u_types_arg_t arg = {.type = type};
+
+  u_nullptr_t ptr     = NULL;
+  struct u_str_t* str = NULL;
+
+  dbg_return_if(s == NULL, ~0);
+  dbg_return_if(type != U_TYPES_C_STR && type != U_TYPES_STR, ~0);
+
+  va_start(ap, type);
+  dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
+
+  str = CONTAINER_STR(s);
+
+  dbg_goto_if(itsize != str->len, err);
+
+  dbg_goto_if(strncmp(ptr, str->buf, str->len) != 0, err);
+
+  return true;
+err:
+
+  return false;
 }

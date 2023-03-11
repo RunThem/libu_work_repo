@@ -22,7 +22,7 @@ extern "C" {
 #  define U_DBG_MAX_LENGTH 1024
 #endif
 
-typedef int (*u_dbg_hook_t)(u_str_t msg);
+typedef int (*u_dbg_hook_t)(u_c_str_t msg);
 
 #ifdef NDEBUG
 

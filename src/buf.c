@@ -16,15 +16,19 @@ struct u_buf_t {
 #define CONTAINER_BUF(b) (container_of(b, struct u_buf_t, buf))
 
 u_buf_t u_buf_create(size_t size) {
+  size_t alloc_size = size;
+
   struct u_buf_t* buf = NULL;
 
   if (size < U_BUF_DEFAULT_LENGTH) {
-    size = U_BUF_DEFAULT_LENGTH;
+    alloc_size = U_BUF_DEFAULT_LENGTH;
   }
 
-  dbg_alloc_if(buf = (struct u_buf*)u_zalloc(BUF_HEADER_SIZE + size));
+  alloc_size = u_misc_align_2pow(alloc_size);
 
-  buf->alloc = size;
+  dbg_alloc_if(buf = (struct u_buf_t*)u_zalloc(BUF_HEADER_SIZE + alloc_size));
+
+  buf->alloc = alloc_size;
 
   return u_buf(buf->buf);
 err:
@@ -55,18 +59,28 @@ size_t u_buf_free(u_buf_t b) {
   return CONTAINER_BUF(b)->alloc - CONTAINER_BUF(b)->len;
 }
 
+u_bool_t u_buf_empty(u_buf_t b) {
+  dbg_return_if(b == NULL, true);
+
+  return !CONTAINER_BUF(b)->len;
+}
+
 int u_buf_resize(u_buf_t* b, size_t size) {
+  size_t alloc_size;
+
   struct u_buf_t* buf = NULL;
 
   dbg_return_if(b == NULL, ~0);
   dbg_return_if(*b == NULL, ~0);
   dbg_return_if(u_buf_alloc(*b) >= size, ~0);
 
+  alloc_size = u_misc_align_2pow(size);
+
   buf = CONTAINER_BUF(*b);
 
-  dbg_alloc_if(buf = (struct u_buf*)u_realloc(buf, BUF_HEADER_SIZE + size));
+  dbg_alloc_if(buf = (struct u_buf_t*)u_realloc(buf, BUF_HEADER_SIZE + alloc_size));
 
-  buf->alloc = size;
+  buf->alloc = alloc_size;
   *b         = u_buf(buf->buf);
 
   return 0;
@@ -76,7 +90,6 @@ err:
 
 int _u_buf_push(u_buf_t* b, u_types_type_e type, ...) {
   size_t itsize;
-  size_t alloc_size;
 
   va_list ap;
   u_types_arg_t arg = {.type = type};
@@ -92,8 +105,7 @@ int _u_buf_push(u_buf_t* b, u_types_type_e type, ...) {
   dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
 
   if (u_buf_free(*b) < itsize) {
-    alloc_size = u_misc_align_2pow(itsize + u_buf_len(*b));
-    dbg_err_if(u_buf_resize(b, alloc_size) != 0);
+    dbg_err_if(u_buf_resize(b, itsize + u_buf_alloc(*b)) != 0);
   }
 
   buf = CONTAINER_BUF(*b);
@@ -145,7 +157,6 @@ err:
 
 int _u_buf_insert(u_buf_t* b, size_t idx, u_types_type_e type, ...) {
   size_t itsize;
-  size_t alloc_size;
 
   va_list ap;
   u_types_arg_t arg = {.type = type};
@@ -162,8 +173,7 @@ int _u_buf_insert(u_buf_t* b, size_t idx, u_types_type_e type, ...) {
   dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
 
   if (u_buf_free(*b) < itsize) {
-    alloc_size = u_misc_align_2pow(itsize + u_buf_alloc(*b));
-    dbg_err_if(u_buf_resize(b, alloc_size) != 0);
+    dbg_err_if(u_buf_resize(b, itsize + u_buf_alloc(*b)) != 0);
   }
 
   buf = CONTAINER_BUF(*b);
@@ -203,7 +213,7 @@ int _u_buf_at(u_buf_t b, size_t idx, u_types_type_e type, ...) {
 
   buf = CONTAINER_BUF(b);
 
-  memcpy(ptr, &buf->buf[idx], itsize);
+  memcpy((void*)ptr, &buf->buf[idx], itsize);
 
   va_end(ap);
 
@@ -238,7 +248,7 @@ u_buf_t u_buf_copy(u_buf_t b) {
 
   _buf = CONTAINER_BUF(b);
 
-  dbg_alloc_if(buf = u_zalloc(BUF_HEADER_SIZE + _buf->alloc));
+  dbg_alloc_if(buf = (struct u_buf_t*)u_zalloc(BUF_HEADER_SIZE + _buf->alloc));
 
   memcpy(buf, _buf, BUF_HEADER_SIZE + _buf->alloc);
 

@@ -11,7 +11,7 @@ set_version('0.0.1')
 add_rules('mode.debug')
 
 -- set warning all as error
--- set_warnings('all', 'error')
+set_warnings('all')
 
 -- set language: c99
 set_languages('c2x', 'c++17')

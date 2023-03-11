@@ -15,9 +15,9 @@ mut_test(libu_str_create) {
       {16,   3   },
       {16,   7   },
       {16,   10  },
-      {100,  100 },
-      {129,  129 },
-      {1025, 1025},
+      {128,  100 },
+      {256,  129 },
+      {2048, 1025},
   };
   for (size_t i = 0; i < sizeof(tbl) / sizeof(tbl[0]); i++) {
     str = u_str_create(tbl[i].m);
@@ -49,7 +49,7 @@ mut_test(libu_str_create_from) {
   };
 
   for (size_t i = 0; i < sizeof(tbl) / sizeof(tbl[0]); i++) {
-    str = u_str_create_from(tbl[i].str);
+    str = u_str_create_from(u_c_str(tbl[i].str));
 
     mut_assert(str != NULL);
 
@@ -58,7 +58,7 @@ mut_test(libu_str_create_from) {
 
     mut_equal(u_str_alloc(str) - strlen(tbl[i].str), u_str_free(str));
 
-    mut_equal(tbl[i].str, str->buf);
+    mut_equal(tbl[i].str, (char*)u_str_cstr(str));
     u_str_clean(str);
   }
 }
@@ -70,13 +70,13 @@ mut_test(libu_str_resize) {
     int n;
     int m;
   } tbl[] = {
-      {33,   0   },
-      {33,   3   },
-      {33,   7   },
-      {33,   10  },
-      {201,  100 },
-      {259,  129 },
-      {2051, 1025},
+      {64,   0   },
+      {64,   3   },
+      {64,   7   },
+      {64,   10  },
+      {512,  100 },
+      {1024, 129 },
+      {8192, 1025},
   };
 
   for (size_t i = 0; i < sizeof(tbl) / sizeof(tbl[0]); i++) {
@@ -115,7 +115,7 @@ mut_test(libu_str_cat_of_char) {
     mut_equal(strlen(tbl[i].str1), u_str_len(str));
     mut_equal(tbl[i].n, u_str_alloc(str));
 
-    mut_equal(tbl[i].str1, str->buf);
+    mut_equal(tbl[i].str1, (char*)u_str_cstr(str));
     u_str_clean(str);
   }
 }
@@ -144,7 +144,7 @@ mut_test(libu_str_cat_of_c_str) {
     mut_equal(strlen(tbl[i].str1), u_str_len(str));
     mut_equal(tbl[i].n, u_str_alloc(str));
 
-    mut_equal(tbl[i].str1, str->buf);
+    mut_equal(tbl[i].str1, (char*)u_str_cstr(str));
     u_str_clean(str);
   }
 }
@@ -175,7 +175,7 @@ mut_test(libu_str_cat_of_str) {
     mut_equal(strlen(tbl[i].str1), u_str_len(str));
     mut_equal(tbl[i].n, u_str_alloc(str));
 
-    mut_equal(tbl[i].str1, str->buf);
+    mut_equal(tbl[i].str1, (char*)u_str_cstr(str));
 
     u_str_clean(str1);
     u_str_clean(str);
@@ -204,7 +204,7 @@ mut_test(libu_str_copy) {
     mut_equal(u_str_len(str1), u_str_len(str));
     mut_equal(u_str_alloc(str1), u_str_alloc(str));
 
-    mut_equal(str1->buf, str->buf);
+    mut_equal((char*)u_str_cstr(str1), (char*)u_str_cstr(str));
 
     u_str_clean(str1);
     u_str_clean(str);
