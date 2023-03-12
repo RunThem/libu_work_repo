@@ -43,6 +43,18 @@ u_str_t u_str_copy(u_str_t s);
 u_bool_t _u_str_compare(u_str_t s, u_types_type_e type, ...);
 #define u_str_compare(s, v) _u_str_compare(s, u_types_of(v), v)
 
+u_bool_t _u_str_contains(u_str_t s, u_types_type_e type, ...);
+#define u_str_contains(s, v) _u_str_contains(s, u_types_of(v), v)
+
+u_bool_t _u_str_prefix(u_str_t s, u_types_type_e type, ...);
+#define u_str_prefix(s, v) _u_str_prefix(s, u_types_of(v), v)
+
+u_bool_t _u_str_suffix(u_str_t s, u_types_type_e type, ...);
+#define u_str_suffix(s, v) _u_str_suffix(s, u_types_of(v), v)
+
+ssize_t _u_str_index(u_str_t s, u_types_type_e type, ...);
+#define u_str_index(s, v) _u_str_index(s, u_types_of(v), v)
+
 #define u_str_for(s, ch)                                                                           \
   for (size_t i = 0, _len = u_str_len(s); i < _len && (ch = u_str_at(s, i)); i++)
 

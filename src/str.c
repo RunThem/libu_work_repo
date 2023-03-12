@@ -26,7 +26,8 @@ u_str_t u_str_create(size_t size) {
 
   dbg_alloc_if(str = (struct u_str_t*)u_zalloc(STR_HEADER_SIZE + size + 1));
 
-  str->alloc = size;
+  str->alloc  = size;
+  str->buf[0] = '\0';
 
   return u_str(str->buf);
 err:
@@ -52,8 +53,9 @@ u_str_t u_str_create_from(u_c_str_t c_str) {
 
   strncpy(str->buf, c_str, size);
 
-  str->len   = size;
-  str->alloc = alloc_size;
+  str->len       = size;
+  str->alloc     = alloc_size;
+  str->buf[size] = '\0';
 
   return u_str(str->buf);
 err:
@@ -135,7 +137,9 @@ int _u_str_cat(u_str_t* s, u_types_type_e type, ...) {
   str = CONTAINER_STR(*s);
 
   strncpy(&str->buf[str->len], ptr, itsize);
+
   str->len += itsize;
+  str->buf[str->len] = '\0';
 
   va_end(ap);
 
@@ -173,6 +177,7 @@ int _u_str_insert(u_str_t* s, size_t idx, u_types_type_e type, ...) {
   memcpy(&str->buf[idx], ptr, itsize);
 
   str->len += itsize;
+  str->buf[str->len] = '\0';
 
   va_end(ap);
 
@@ -205,6 +210,7 @@ int u_str_remove(u_str_t s, size_t idx, size_t itsize) {
   memmove(&str->buf[idx], &str->buf[idx + itsize], str->len - idx - itsize);
 
   str->len -= itsize;
+  str->buf[str->len] = '\0';
 
   return 0;
 }
@@ -251,12 +257,146 @@ u_bool_t _u_str_compare(u_str_t s, u_types_type_e type, ...) {
 
   str = CONTAINER_STR(s);
 
-  dbg_goto_if(itsize != str->len, err);
-
-  dbg_goto_if(strncmp(ptr, str->buf, str->len) != 0, err);
+  dbg_err_if(itsize != str->len);
+  dbg_err_if(strncmp(ptr, str->buf, str->len) != 0);
 
   return true;
 err:
 
   return false;
+}
+
+u_bool_t _u_str_contains(u_str_t s, u_types_type_e type, ...) {
+  size_t itsize;
+
+  va_list ap;
+  u_types_arg_t arg = {.type = type};
+
+  u_nullptr_t ptr     = NULL;
+  struct u_str_t* str = NULL;
+
+  dbg_return_if(s == NULL, ~0);
+  dbg_return_if(type != U_TYPES_BYTE && type != U_TYPES_C_STR && type != U_TYPES_STR, ~0);
+
+  va_start(ap, type);
+  dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
+
+  str = CONTAINER_STR(s);
+
+  dbg_err_if(str->len < itsize);
+
+  if (type == U_TYPES_BYTE) {
+    dbg_err_if(strchr(str->buf, *(char*)ptr) == NULL);
+  } else {
+    dbg_err_if(strstr(str->buf, ptr) == NULL);
+  }
+
+  return true;
+err:
+
+  return false;
+}
+
+u_bool_t _u_str_prefix(u_str_t s, u_types_type_e type, ...) {
+  size_t itsize;
+
+  va_list ap;
+  u_types_arg_t arg = {.type = type};
+
+  u_nullptr_t ptr     = NULL;
+  struct u_str_t* str = NULL;
+
+  dbg_return_if(s == NULL, ~0);
+  dbg_return_if(type != U_TYPES_BYTE && type != U_TYPES_C_STR && type != U_TYPES_STR, ~0);
+
+  va_start(ap, type);
+  dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
+
+  str = CONTAINER_STR(s);
+
+  dbg_err_if(str->len < itsize);
+  dbg_err_if(strncmp(str->buf, ptr, itsize) != 0);
+
+  return true;
+err:
+  return false;
+}
+
+u_bool_t _u_str_suffix(u_str_t s, u_types_type_e type, ...) {
+  size_t itsize;
+
+  va_list ap;
+  u_types_arg_t arg = {.type = type};
+
+  u_nullptr_t ptr     = NULL;
+  struct u_str_t* str = NULL;
+
+  dbg_return_if(s == NULL, ~0);
+  dbg_return_if(type != U_TYPES_BYTE && type != U_TYPES_C_STR && type != U_TYPES_STR, ~0);
+
+  va_start(ap, type);
+  dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
+
+  str = CONTAINER_STR(s);
+
+  dbg_err_if(str->len < itsize);
+  dbg_err_if(strncmp(&str->buf[str->len - itsize], ptr, itsize) != 0);
+
+  return true;
+err:
+  return false;
+}
+
+ssize_t _u_str_index(u_str_t s, u_types_type_e type, ...) {
+  char* idx;
+  size_t itsize;
+
+  va_list ap;
+  u_types_arg_t arg = {.type = type};
+
+  u_nullptr_t ptr     = NULL;
+  struct u_str_t* str = NULL;
+
+  dbg_return_if(s == NULL, ~0);
+  dbg_return_if(type != U_TYPES_BYTE && type != U_TYPES_C_STR && type != U_TYPES_STR, ~0);
+
+  va_start(ap, type);
+  dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
+
+  str = CONTAINER_STR(s);
+
+  dbg_err_if(str->len < itsize);
+
+  if (type == U_TYPES_BYTE) {
+    dbg_err_if((idx = strchr(str->buf, *(char*)ptr)) == NULL);
+  } else {
+    dbg_err_if((idx = strstr(str->buf, ptr)) == NULL);
+  }
+
+  return idx - str->buf;
+err:
+
+  return -1;
+}
+
+u_str_t _u_str_repeat(size_t count, u_types_type_e type, ...) {
+  char* idx;
+  size_t itsize;
+
+  va_list ap;
+  u_types_arg_t arg = {.type = type};
+
+  u_nullptr_t ptr     = NULL;
+  struct u_str_t* str = NULL;
+
+  dbg_return_if(count <= 1, NULL);
+  dbg_return_if(type != U_TYPES_BYTE && type != U_TYPES_C_STR && type != U_TYPES_STR, NULL);
+
+  va_start(ap, type);
+  dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
+
+  return NULL;
+err:
+
+  return NULL;
 }

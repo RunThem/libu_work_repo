@@ -43,5 +43,13 @@ int main() {
 
   u_con("%d", u_str_compare(str, u_c_str(" hello {love} world")));
 
+  u_con("%d", u_str_contains(str, u_byte('a')));
+
+  u_con("%d", u_str_prefix(str, u_c_str(" hell")));
+
+  u_con("%d", u_str_suffix(str, u_c_str(" hello {love} world")));
+
+  u_con("%d", u_str_index(str, u_byte('a')));
+
   return 0;
 }
