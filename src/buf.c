@@ -15,87 +15,83 @@ struct u_buf_t {
 #define BUF_HEADER_SIZE  (sizeof(struct u_buf_t))
 #define CONTAINER_BUF(b) (container_of(b, struct u_buf_t, buf))
 
-u_buf_t u_buf_create(size_t size) {
-  size_t alloc_size = size;
-
-  struct u_buf_t* buf = NULL;
+u_buf_t _u_buf_create(size_t size) {
+  u_buf_t buf = NULL;
 
   if (size < U_BUF_DEFAULT_LENGTH) {
-    alloc_size = U_BUF_DEFAULT_LENGTH;
+    size = U_BUF_DEFAULT_LENGTH;
   }
 
-  alloc_size = u_misc_align_2pow(alloc_size);
+  size = u_misc_align_2pow(size);
+  dbg_alloc_if(buf = (u_buf_t)u_zalloc(BUF_HEADER_SIZE + size));
 
-  dbg_alloc_if(buf = (struct u_buf_t*)u_zalloc(BUF_HEADER_SIZE + alloc_size));
-
-  buf->alloc = alloc_size;
+  buf->alloc = size;
 
   return u_buf(buf->buf);
 err:
+
   return NULL;
 }
 
-void u_buf_clean(u_buf_t b) {
+void _u_buf_clean(u_buf_t b) {
   dbg_return_if(b == NULL, );
 
   u_free(CONTAINER_BUF(b));
 }
 
-size_t u_buf_len(u_buf_t b) {
+size_t _u_buf_len(u_buf_t b) {
   dbg_return_if(b == NULL, 0);
 
   return CONTAINER_BUF(b)->len;
 }
 
-size_t u_buf_alloc(u_buf_t b) {
+size_t _u_buf_alloc(u_buf_t b) {
   dbg_return_if(b == NULL, 0);
 
   return CONTAINER_BUF(b)->alloc;
 }
 
-size_t u_buf_free(u_buf_t b) {
+size_t _u_buf_free(u_buf_t b) {
   dbg_return_if(b == NULL, 0);
 
   return CONTAINER_BUF(b)->alloc - CONTAINER_BUF(b)->len;
 }
 
-u_bool_t u_buf_empty(u_buf_t b) {
+u_bool_t _u_buf_empty(u_buf_t b) {
   dbg_return_if(b == NULL, true);
 
   return !CONTAINER_BUF(b)->len;
 }
 
-int u_buf_resize(u_buf_t* b, size_t size) {
-  size_t alloc_size;
-
-  struct u_buf_t* buf = NULL;
+int _u_buf_resize(u_buf_t* b, size_t size) {
+  u_buf_t buf = NULL;
 
   dbg_return_if(b == NULL, ~0);
   dbg_return_if(*b == NULL, ~0);
   dbg_return_if(u_buf_alloc(*b) >= size, ~0);
 
-  alloc_size = u_misc_align_2pow(size);
+  size = u_misc_align_2pow(size);
 
   buf = CONTAINER_BUF(*b);
 
-  dbg_alloc_if(buf = (struct u_buf_t*)u_realloc(buf, BUF_HEADER_SIZE + alloc_size));
+  dbg_alloc_if(buf = (u_buf_t)u_realloc(buf, BUF_HEADER_SIZE + size));
 
-  buf->alloc = alloc_size;
+  buf->alloc = size;
   *b         = u_buf(buf->buf);
 
   return 0;
 err:
+
   return ~0;
 }
 
 int _u_buf_push(u_buf_t* b, u_types_type_e type, ...) {
-  size_t itsize;
-
   va_list ap;
+  size_t itsize;
+  u_nullptr_t ptr   = NULL;
   u_types_arg_t arg = {.type = type};
 
-  u_nullptr_t ptr     = NULL;
-  struct u_buf_t* buf = NULL;
+  u_buf_t buf = NULL;
 
   dbg_return_if(b == NULL, ~0);
   dbg_return_if(*b == NULL, ~0);
@@ -105,7 +101,7 @@ int _u_buf_push(u_buf_t* b, u_types_type_e type, ...) {
   dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
 
   if (u_buf_free(*b) < itsize) {
-    dbg_err_if(u_buf_resize(b, itsize + u_buf_alloc(*b)) != 0);
+    dbg_err_if(u_buf_resize(*b, itsize + u_buf_alloc(*b)) != 0);
   }
 
   buf = CONTAINER_BUF(*b);
@@ -124,13 +120,12 @@ err:
 }
 
 int _u_buf_pop(u_buf_t b, u_types_type_e type, ...) {
-  size_t itsize;
-
   va_list ap;
+  size_t itsize;
+  u_nullptr_t ptr   = NULL;
   u_types_arg_t arg = {.type = type};
 
-  u_nullptr_t ptr     = NULL;
-  struct u_buf_t* buf = NULL;
+  u_buf_t buf = NULL;
 
   dbg_return_if(b == NULL, ~0);
   dbg_return_if(type == U_TYPES_NONE, ~0);
@@ -156,13 +151,12 @@ err:
 }
 
 int _u_buf_insert(u_buf_t* b, size_t idx, u_types_type_e type, ...) {
-  size_t itsize;
-
   va_list ap;
+  size_t itsize;
+  u_nullptr_t ptr   = NULL;
   u_types_arg_t arg = {.type = type};
 
-  u_nullptr_t ptr     = NULL;
-  struct u_buf_t* buf = NULL;
+  u_buf_t buf = NULL;
 
   dbg_return_if(b == NULL, ~0);
   dbg_return_if(*b == NULL, ~0);
@@ -173,12 +167,10 @@ int _u_buf_insert(u_buf_t* b, size_t idx, u_types_type_e type, ...) {
   dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
 
   if (u_buf_free(*b) < itsize) {
-    dbg_err_if(u_buf_resize(b, itsize + u_buf_alloc(*b)) != 0);
+    dbg_err_if(u_buf_resize(*b, itsize + u_buf_alloc(*b)) != 0);
   }
 
   buf = CONTAINER_BUF(*b);
-
-  u_info("%ld %ld", idx, itsize);
 
   memmove(&buf->buf[idx + itsize], &buf->buf[idx], buf->len - idx);
   memcpy(&buf->buf[idx], ptr, itsize);
@@ -195,21 +187,21 @@ err:
 }
 
 int _u_buf_at(u_buf_t b, size_t idx, u_types_type_e type, ...) {
-  size_t itsize;
-
   va_list ap;
+  size_t itsize;
+  u_nullptr_t ptr   = NULL;
   u_types_arg_t arg = {.type = type};
 
-  u_nullptr_t ptr     = NULL;
-  struct u_buf_t* buf = NULL;
+  u_buf_t buf = NULL;
 
   dbg_return_if(b == NULL, ~0);
   dbg_return_if(idx >= u_buf_len(b), ~0);
-  dbg_return_if((idx + itsize) > u_buf_len(b), ~0);
   dbg_return_if(type == U_TYPES_NONE, ~0);
 
   va_start(ap, type);
   dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
+
+  dbg_err_if((idx + itsize) > u_buf_len(b));
 
   buf = CONTAINER_BUF(b);
 
@@ -224,8 +216,8 @@ err:
   return ~0;
 }
 
-int u_buf_remove(u_buf_t b, size_t idx, size_t itsize) {
-  struct u_buf_t* buf = NULL;
+int _u_buf_remove(u_buf_t b, size_t idx, size_t itsize) {
+  u_buf_t buf = NULL;
 
   dbg_return_if(b == NULL, ~0);
   dbg_return_if(idx >= u_buf_len(b), ~0);
@@ -240,19 +232,19 @@ int u_buf_remove(u_buf_t b, size_t idx, size_t itsize) {
   return 0;
 }
 
-u_buf_t u_buf_copy(u_buf_t b) {
-  struct u_buf_t* buf  = NULL;
-  struct u_buf_t* _buf = NULL;
+u_buf_t _u_buf_copy(u_buf_t b) {
+  u_buf_t buf_1 = NULL;
+  u_buf_t buf_2 = NULL;
 
   dbg_return_if(b == NULL, NULL);
 
-  _buf = CONTAINER_BUF(b);
+  buf_2 = CONTAINER_BUF(b);
 
-  dbg_alloc_if(buf = (struct u_buf_t*)u_zalloc(BUF_HEADER_SIZE + _buf->alloc));
+  dbg_alloc_if(buf_1 = (u_buf_t)u_zalloc(BUF_HEADER_SIZE + buf_2->alloc));
 
-  memcpy(buf, _buf, BUF_HEADER_SIZE + _buf->alloc);
+  memcpy(buf_1, buf_2, BUF_HEADER_SIZE + buf_2->alloc);
 
-  return u_buf(buf->buf);
+  return u_buf(buf_1->buf);
 err:
 
   return NULL;

@@ -15,42 +15,59 @@ extern "C" {
 #  define U_VEC_DEFAULT_LENGTH 16
 #endif /* !U_VEC_DEFAULT_LENGTH */
 
-u_vec_t u_vec_create(size_t size, size_t itsize);
-void u_vec_clean(u_vec_t v);
-int u_vec_resize(u_vec_t* v, size_t size);
+u_vec_t _u_vec_create(size_t size, size_t itsize);
+#define u_vec_create(s, is) _u_vec_create(s, is)
 
-size_t u_vec_len(u_vec_t v);
-size_t u_vec_alloc(u_vec_t v);
-size_t u_vec_free(u_vec_t v);
-size_t u_vec_itsize(u_vec_t v);
-u_bool_t u_vec_empty(u_vec_t v);
+void _u_vec_clean(u_vec_t v);
+#define u_vec_clean(v) _u_vec_clean(v)
+
+int _u_vec_resize(u_vec_t* v, size_t size);
+#define u_vec_resize(v, s) _u_vec_resize(&v, s)
+
+size_t _u_vec_len(u_vec_t v);
+#define u_vec_len(v) _u_vec_len(v)
+
+size_t _u_vec_alloc(u_vec_t v);
+#define u_vec_alloc(v) _u_vec_alloc(v)
+
+size_t _u_vec_free(u_vec_t v);
+#define u_vec_free(v) _u_vec_free(v)
+
+size_t _u_vec_itsize(u_vec_t v);
+#define u_vec_itsize(v) _u_vec_itsize(v)
+
+u_bool_t _u_vec_empty(u_vec_t v);
+#define u_vec_empty(v) _u_vec_empty(v)
 
 int _u_vec_push(u_vec_t* v, u_types_type_e type, ...);
-#define u_vec_push(v, a) _u_vec_push(v, u_types_of(a), a)
+#define u_vec_push(v, a) _u_vec_push(&v, u_types_of(a), a)
 
 int _u_vec_pop(u_vec_t v, u_types_type_e type, ...);
 #define u_vec_pop(v, a) _u_vec_pop(v, u_types_of(a), a)
 
 int _u_vec_insert(u_vec_t* v, size_t idx, u_types_type_e type, ...);
-#define u_vec_insert(v, i, a) _u_vec_insert(v, i, u_types_of(a), a)
+#define u_vec_insert(v, i, a) _u_vec_insert(&v, i, u_types_of(a), a)
 
 int _u_vec_at(u_vec_t v, size_t idx, u_types_type_e type, ...);
 #define u_vec_at(v, i, a) _u_vec_at(v, i, u_types_of(a), a)
 
-int u_vec_remove(u_vec_t v, size_t idx);
+int _u_vec_remove(u_vec_t v, size_t idx);
+#define u_vec_remove(v, i) _u_vec_remove(v, i)
 
 int _u_vec_replace(u_vec_t v, size_t idx, u_types_type_e type, ...);
 #define u_vec_replace(v, i, a) _u_vec_replace(v, i, u_types_of(a), a)
 
-u_vec_t u_vec_copy(u_vec_t v);
+u_vec_t _u_vec_copy(u_vec_t v);
+#define u_vec_copy(v) _u_vec_copy(v)
 
-u_nullptr_t u_vec_at_ptr(u_vec_t v, size_t idx);
+u_nullptr_t _u_vec_at_ptr(u_vec_t v, size_t idx);
+#define u_vec_at_ptr(v, i) _u_vec_at_ptr(v, i)
 
 #define u_vec_for(v, it)                                                                           \
   for (size_t i = 0, _len = u_vec_len(v); i < _len && !u_vec_at(v, i, &it); i++)
 
 #define u_vec_scan(v, p, type)                                                                     \
-  for (size_t i = 0, _len = u_vec_len(v); i < _len && ((p) = (type*)u_vec_at_ptr(v, i)); i++)
+  for (size_t i = 0, _len = u_vec_len(v); i < _len && ((p) = (type)u_vec_at_ptr(v, i)); i++)
 
 #ifdef __cplusplus
 } /* extern "C" */

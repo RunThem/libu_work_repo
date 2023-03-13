@@ -16,8 +16,8 @@ struct u_vec_t {
 #define VEC_HEADER_SIZE  (sizeof(struct u_vec_t))
 #define CONTAINER_VEC(v) (container_of(v, struct u_vec_t, buf))
 
-u_vec_t u_vec_create(size_t size, size_t itsize) {
-  struct u_vec_t* vec = NULL;
+u_vec_t _u_vec_create(size_t size, size_t itsize) {
+  u_vec_t vec = NULL;
 
   dbg_return_if(itsize == 0, NULL);
 
@@ -25,7 +25,7 @@ u_vec_t u_vec_create(size_t size, size_t itsize) {
     size = U_VEC_DEFAULT_LENGTH;
   }
 
-  dbg_alloc_if(vec = (struct u_vec_t*)u_zalloc(VEC_HEADER_SIZE + size * itsize));
+  dbg_alloc_if(vec = (u_vec_t)u_zalloc(VEC_HEADER_SIZE + size * itsize));
 
   vec->alloc  = size;
   vec->itsize = itsize;
@@ -36,44 +36,44 @@ err:
   return NULL;
 }
 
-void u_vec_clean(u_vec_t v) {
+void _u_vec_clean(u_vec_t v) {
   dbg_return_if(v == NULL, );
 
   u_free(CONTAINER_VEC(v));
 }
 
-size_t u_vec_len(u_vec_t v) {
+size_t _u_vec_len(u_vec_t v) {
   dbg_return_if(v == NULL, 0);
 
   return CONTAINER_VEC(v)->len;
 }
 
-size_t u_vec_alloc(u_vec_t v) {
+size_t _u_vec_alloc(u_vec_t v) {
   dbg_return_if(v == NULL, 0);
 
   return CONTAINER_VEC(v)->alloc;
 }
 
-size_t u_vec_free(u_vec_t v) {
+size_t _u_vec_free(u_vec_t v) {
   dbg_return_if(v == NULL, 0);
 
   return CONTAINER_VEC(v)->alloc - CONTAINER_VEC(v)->len;
 }
 
-size_t u_vec_itsize(u_vec_t v) {
+size_t _u_vec_itsize(u_vec_t v) {
   dbg_return_if(v == NULL, 0);
 
   return CONTAINER_VEC(v)->itsize;
 }
 
-u_bool_t u_vec_empty(u_vec_t v) {
+u_bool_t _u_vec_empty(u_vec_t v) {
   dbg_return_if(v == NULL, true);
 
   return !CONTAINER_VEC(v)->len;
 }
 
-int u_vec_resize(u_vec_t* v, size_t size) {
-  struct u_vec_t* vec = NULL;
+int _u_vec_resize(u_vec_t* v, size_t size) {
+  u_vec_t vec = NULL;
 
   dbg_return_if(v == NULL, ~0);
   dbg_return_if(*v == NULL, ~0);
@@ -81,24 +81,24 @@ int u_vec_resize(u_vec_t* v, size_t size) {
 
   vec = CONTAINER_VEC(v);
 
-  dbg_alloc_if(vec = (struct u_vec_t*)u_realloc(vec, VEC_HEADER_SIZE + vec->itsize * size));
+  dbg_alloc_if(vec = (u_vec_t)u_realloc(vec, VEC_HEADER_SIZE + vec->itsize * size));
 
   vec->alloc = size;
   *v         = u_vec(vec->buf);
 
   return 0;
 err:
+
   return ~0;
 }
 
 int _u_vec_push(u_vec_t* v, u_types_type_e type, ...) {
-  size_t itsize;
-
   va_list ap;
+  size_t itsize;
+  u_nullptr_t ptr   = NULL;
   u_types_arg_t arg = {.type = type};
 
-  u_nullptr_t ptr     = NULL;
-  struct u_vec_t* vec = NULL;
+  u_vec_t vec = NULL;
 
   dbg_return_if(v == NULL, ~0);
   dbg_return_if(*v == NULL, ~0);
@@ -111,7 +111,7 @@ int _u_vec_push(u_vec_t* v, u_types_type_e type, ...) {
   dbg_err_if(itsize != u_vec_itsize(*v));
 
   if (u_vec_free(*v) == 0) {
-    dbg_err_if(u_vec_resize(v, u_vec_alloc(*v) * 2) != 0);
+    dbg_err_if(u_vec_resize(*v, u_vec_alloc(*v) * 2) != 0);
   }
 
   vec = CONTAINER_VEC(*v);
@@ -130,13 +130,12 @@ err:
 }
 
 int _u_vec_pop(u_vec_t v, u_types_type_e type, ...) {
-  size_t itsize;
-
   va_list ap;
+  size_t itsize;
+  u_nullptr_t ptr   = NULL;
   u_types_arg_t arg = {.type = type};
 
-  u_nullptr_t ptr     = NULL;
-  struct u_vec_t* vec = NULL;
+  u_vec_t vec = NULL;
 
   dbg_return_if(v == NULL, ~0);
   dbg_return_if(type == U_TYPES_NONE, ~0);
@@ -148,7 +147,7 @@ int _u_vec_pop(u_vec_t v, u_types_type_e type, ...) {
 
   vec = CONTAINER_VEC(v);
 
-  memcpy(ptr, &vec->buf[(vec->len - 1) * vec->itsize], vec->itsize);
+  memcpy((void*)ptr, &vec->buf[(vec->len - 1) * vec->itsize], vec->itsize);
 
   vec->len--;
 
@@ -162,13 +161,12 @@ err:
 }
 
 int _u_vec_insert(u_vec_t* v, size_t idx, u_types_type_e type, ...) {
-  size_t itsize;
-
   va_list ap;
+  size_t itsize;
+  u_nullptr_t ptr   = NULL;
   u_types_arg_t arg = {.type = type};
 
-  u_nullptr_t ptr     = NULL;
-  struct u_vec_t* vec = NULL;
+  u_vec_t vec = NULL;
 
   dbg_return_if(v == NULL, ~0);
   dbg_return_if(*v == NULL, ~0);
@@ -182,7 +180,7 @@ int _u_vec_insert(u_vec_t* v, size_t idx, u_types_type_e type, ...) {
   dbg_err_if(itsize != u_vec_itsize(*v));
 
   if (u_vec_free(*v) == 0) {
-    dbg_err_if(u_vec_resize(v, u_vec_alloc(*v) * 2) != 0);
+    dbg_err_if(u_vec_resize(*v, u_vec_alloc(*v) * 2) != 0);
   }
 
   vec = CONTAINER_VEC(*v);
@@ -207,13 +205,12 @@ err:
 }
 
 int _u_vec_at(u_vec_t v, size_t idx, u_types_type_e type, ...) {
-  size_t itsize;
-
   va_list ap;
+  size_t itsize;
+  u_nullptr_t ptr   = NULL;
   u_types_arg_t arg = {.type = type};
 
-  u_nullptr_t ptr     = NULL;
-  struct u_vec_t* vec = NULL;
+  u_vec_t vec = NULL;
 
   dbg_return_if(v == NULL, ~0);
   dbg_return_if(idx >= u_vec_len(v), ~0);
@@ -226,7 +223,7 @@ int _u_vec_at(u_vec_t v, size_t idx, u_types_type_e type, ...) {
 
   vec = CONTAINER_VEC(v);
 
-  memcpy(ptr, &vec->buf[idx * vec->itsize], vec->itsize);
+  memcpy((void*)ptr, &vec->buf[idx * vec->itsize], vec->itsize);
 
   va_end(ap);
 
@@ -238,7 +235,7 @@ err:
 }
 
 int u_vec_remove(u_vec_t v, size_t idx) {
-  struct u_vec_t* vec = NULL;
+  u_vec_t vec = NULL;
 
   dbg_return_if(v == NULL, ~0);
   dbg_return_if(idx > u_vec_len(v), ~0);
@@ -251,13 +248,12 @@ int u_vec_remove(u_vec_t v, size_t idx) {
 }
 
 int _u_vec_replace(u_vec_t v, size_t idx, u_types_type_e type, ...) {
-  size_t itsize;
-
   va_list ap;
+  size_t itsize;
+  u_nullptr_t ptr   = NULL;
   u_types_arg_t arg = {.type = type};
 
-  u_nullptr_t ptr     = NULL;
-  struct u_vec_t* vec = NULL;
+  u_vec_t vec = NULL;
 
   dbg_return_if(v == NULL, ~0);
   dbg_return_if(idx >= u_vec_len(v), ~0);
@@ -282,25 +278,26 @@ err:
   return ~0;
 }
 
-u_vec_t u_vec_copy(u_vec_t v) {
-  struct u_vec_t* vec  = NULL;
-  struct u_vec_t* _vec = NULL;
+u_vec_t _u_vec_copy(u_vec_t v) {
+  u_vec_t vec_1 = NULL;
+  u_vec_t vec_2 = NULL;
 
   dbg_return_if(v == NULL, NULL);
 
-  _vec = CONTAINER_VEC(v);
+  vec_2 = CONTAINER_VEC(v);
 
-  dbg_alloc_if(vec = u_zalloc(VEC_HEADER_SIZE + _vec->alloc * _vec->itsize));
+  dbg_alloc_if(vec_1 = (u_vec_t)u_zalloc(VEC_HEADER_SIZE + vec_2->alloc * vec_2->itsize));
 
-  memcpy(vec, _vec, VEC_HEADER_SIZE + _vec->alloc * _vec->itsize);
+  memcpy(vec_1, vec_2, VEC_HEADER_SIZE + vec_2->alloc * vec_2->itsize);
 
-  return u_vec(vec->buf);
+  return u_vec(vec_1->buf);
 err:
+
   return NULL;
 }
 
-u_nullptr_t u_vec_at_ptr(u_vec_t v, size_t idx) {
-  struct u_vec_t* vec = NULL;
+u_nullptr_t _u_vec_at_ptr(u_vec_t v, size_t idx) {
+  u_vec_t vec = NULL;
 
   dbg_return_if(v == NULL, NULL);
   dbg_return_if(idx >= u_vec_len(v), NULL);

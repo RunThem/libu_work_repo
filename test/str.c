@@ -81,7 +81,7 @@ mut_test(libu_str_resize) {
 
   for (size_t i = 0; i < sizeof(tbl) / sizeof(tbl[0]); i++) {
     str = u_str_create(tbl[i].m);
-    u_str_resize(&str, 1 + 2 * u_str_alloc(str));
+    u_str_resize(str, 1 + 2 * u_str_alloc(str));
 
     mut_assert(str != NULL);
 

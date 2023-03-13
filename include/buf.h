@@ -15,14 +15,26 @@ extern "C" {
 #  define U_BUF_DEFAULT_LENGTH 16
 #endif /* !U_BUF_DEFAULT_LENGTH */
 
-u_buf_t u_buf_create(size_t size);
-int u_buf_resize(u_buf_t* b, size_t size);
-void u_buf_clean(u_buf_t b);
+u_buf_t _u_buf_create(size_t size);
+#define u_buf_create(s) _u_buf_create(s)
 
-size_t u_buf_len(u_buf_t b);
-size_t u_buf_alloc(u_buf_t b);
-size_t u_buf_free(u_buf_t b);
-u_bool_t u_buf_empty(u_buf_t b);
+int _u_buf_resize(u_buf_t* b, size_t size);
+#define u_buf_resize(b, ss) _u_buf_resize(&b, ss)
+
+void _u_buf_clean(u_buf_t b);
+#define u_buf_clean(b) _u_buf_clean(b)
+
+size_t _u_buf_len(u_buf_t b);
+#define u_buf_len(b) _u_buf_len(b)
+
+size_t _u_buf_alloc(u_buf_t b);
+#define u_buf_alloc(b) _u_buf_alloc(b)
+
+size_t _u_buf_free(u_buf_t b);
+#define u_buf_free(b) _u_buf_free(b)
+
+u_bool_t _u_buf_empty(u_buf_t b);
+#define u_buf_empty(b) _u_buf_empty(b)
 
 int _u_buf_push(u_buf_t* b, u_types_type_e type, ...);
 #define u_buf_push(b, v, ...) _u_buf_push(b, u_types_of(v), v, ##__VA_ARGS__)
@@ -36,9 +48,11 @@ int _u_buf_insert(u_buf_t* b, size_t idx, u_types_type_e type, ...);
 int _u_buf_at(u_buf_t b, size_t idx, u_types_type_e type, ...);
 #define u_buf_at(b, i, v, ...) _u_buf_at(b, i, u_types_of(v), v, ##__VA_ARGS__)
 
-int u_buf_remove(u_buf_t b, size_t idx, size_t itsize);
+int _u_buf_remove(u_buf_t b, size_t idx, size_t itsize);
+#define u_buf_remove(b) _u_buf_remove(b)
 
-u_buf_t u_buf_copy(u_buf_t b);
+u_buf_t _u_buf_copy(u_buf_t b);
+#define u_buf_copy(b) _u_buf_copy(b)
 
 #ifdef __cplusplus
 } /* extern "C" */

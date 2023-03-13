@@ -51,5 +51,7 @@ int main() {
 
   u_con("%d", u_str_index(str, u_byte('a')));
 
+  u_str_replace(&str, u_c_str("jisjfie"), u_c_str("  "));
+
   return 0;
 }
