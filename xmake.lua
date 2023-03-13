@@ -25,6 +25,10 @@ if is_mode('debug') then
   add_undefines('NDEBUG')
 end
 
+if is_mode('release') then
+  add_defines('NDEBUG')
+end
+
 -- include project sources
 add_includedirs('include/')
 
