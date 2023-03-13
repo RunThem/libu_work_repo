@@ -197,8 +197,7 @@ mut_test(libu_str_copy) {
   };
 
   for (size_t i = 0; i < sizeof(tbl) / sizeof(tbl[0]); i++) {
-    str = u_str_create_from(tbl[i].str);
-
+    str          = u_str_create_from(tbl[i].str);
     u_str_t str1 = u_str_copy(str);
 
     mut_equal(u_str_len(str1), u_str_len(str));

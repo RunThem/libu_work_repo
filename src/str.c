@@ -380,7 +380,9 @@ int _u_str_replace(u_str_t* s, u_types_type_e type_1, u_types_type_e type_2, ...
   u_types_arg_t arg_1 = {.type = type_1};
   u_types_arg_t arg_2 = {.type = type_2};
 
-  // struct u_str_t* str = NULL;
+  size_t diff = 0;
+  ssize_t idx = NULL;
+  u_str_t str = NULL;
 
   dbg_return_if(s == NULL, ~0);
   dbg_return_if(*s == NULL, ~0);
@@ -393,6 +395,22 @@ int _u_str_replace(u_str_t* s, u_types_type_e type_1, u_types_type_e type_2, ...
 
   printf("type is %d, ptr is %p, itsize is %ld\n", type_1, ptr_1, itsize_1);
   printf("type is %d, ptr is %p, itsize is %ld\n", type_2, ptr_2, itsize_2);
+
+  dbg_err_if(itsize_1 == 0);
+  dbg_err_if((idx = u_str_index(*s, u_c_str(ptr_1))) == -1);
+
+  diff = itsize_2 - itsize_1;
+  u_dbg("%d", diff);
+  if (itsize_2 > itsize_1 && diff > u_str_free(*s)) {
+    dbg_err_if(u_str_resize(*s, diff + u_str_alloc(*s)) != 0);
+  }
+
+  str = CONTAINER_STR(*s);
+
+  memmove(&str->buf[idx + itsize_2], &str->buf[idx + itsize_1], str->len - idx - itsize_1);
+  memcpy(&str->buf[idx], ptr_2, itsize_2);
+
+  str->len += diff;
 
 err:
 

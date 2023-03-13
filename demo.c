@@ -9,49 +9,51 @@
 #include <types.h>
 #include <vec.h>
 
-#define u_str_debug(s)                                                                             \
-  do {                                                                                             \
-    u_info("string len is %ld, alloc is %ld. \"%s\"",                                              \
-           u_str_len(s),                                                                           \
-           u_str_alloc(s),                                                                         \
-           u_str_cstr(s));                                                                         \
-  } while (0)
-
 int main() {
-  u_str_t str = u_str_create_from(u_c_str(" hello, world"));
+  u_str_t str_itor = NULL;
+  u_vec_t vec_itor, v1 = NULL;
+  u_vec_t vec_vec = u_vec_create(4, sizeof(u_vec_t));
+  u_con("%p", vec_vec);
 
-  char c;
-  u_str_for(str, c) {
-    printf("'%c' ", c);
+  v1 = u_vec_create(4, sizeof(u_c_str_t));
+  u_vec_push(vec_vec, v1);
+  u_vec_push(vec_vec, u_vec_create(4, sizeof(u_c_str_t)));
+
+  u_con("%p", v1);
+
+  // u_con("%d", u_vec_len(vec_vec));
+
+  // vec_itor = u_vec_quote(vec_vec, 0, u_vec_t);
+  // u_vec_push(vec_itor, u_nullptr("hello work space"));
+  // u_vec_push(vec_itor, u_nullptr("hello iccy"));
+
+  // u_con("%p", vec_itor);
+
+  // u_con("%d", u_vec_len(vec_itor));
+
+  // vec_itor = u_vec_quote(vec_vec, 0, u_vec_t);
+  // u_con("%p", vec_itor);
+
+  u_vec_at(vec_vec, 0, &vec_itor);
+  u_con("%p", vec_itor);
+
+  u_vec_push(u_vec_quote(vec_vec, 0, u_vec_t), u_nullptr("hello runthem.org"));
+  u_vec_push(u_vec_quote(vec_vec, 0, u_vec_t), u_nullptr("hello runthem.org"));
+
+  u_vec_push(vec_itor, u_nullptr("hello iccy.fun"));
+  u_con("%d", u_vec_len(vec_itor));
+
+  u_vec_for(vec_vec, vec_itor) {
+    u_vec_for(vec_itor, str_itor) {
+      printf("%s\n", u_str_cstr(str_itor));
+    }
   }
-  printf("\n");
 
-  u_str_debug(str);
+  // u_vec_for(vec_vec, vec_itor) {
+  //   u_vec_clean(vec_itor);
+  // }
 
-  size_t idx = 6;
-
-  u_str_remove(str, idx, sizeof(char));
-  u_str_insert(&str, idx, u_c_str(" {love}"));
-
-  u_str_debug(str);
-
-  u_str_t _str = u_str_copy(str);
-
-  u_str_debug(_str);
-
-  u_con("%d", u_misc_align_2pow(16));
-
-  u_con("%d", u_str_compare(str, u_c_str(" hello {love} world")));
-
-  u_con("%d", u_str_contains(str, u_byte('a')));
-
-  u_con("%d", u_str_prefix(str, u_c_str(" hell")));
-
-  u_con("%d", u_str_suffix(str, u_c_str(" hello {love} world")));
-
-  u_con("%d", u_str_index(str, u_byte('a')));
-
-  u_str_replace(&str, u_c_str("jisjfie"), u_c_str("  "));
+  u_vec_clean(vec_vec);
 
   return 0;
 }

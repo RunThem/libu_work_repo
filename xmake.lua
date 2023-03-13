@@ -21,7 +21,7 @@ add_defines('_GNU_SOURCE')
 add_defines('__STDC_VERSION__=201710L+1')
 
 if is_mode('debug') then
-  add_cflags('-pg')
+  add_cflags('-pg', '-Wall')
   add_undefines('NDEBUG')
 end
 

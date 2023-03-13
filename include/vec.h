@@ -40,28 +40,28 @@ u_bool_t _u_vec_empty(u_vec_t v);
 #define u_vec_empty(v) _u_vec_empty(v)
 
 int _u_vec_push(u_vec_t* v, u_types_type_e type, ...);
-#define u_vec_push(v, a) _u_vec_push(&v, u_types_of(a), a)
+#define u_vec_push(v, a, ...) _u_vec_push(&v, u_types_of(a), a, ##__VA_ARGS__)
 
 int _u_vec_pop(u_vec_t v, u_types_type_e type, ...);
-#define u_vec_pop(v, a) _u_vec_pop(v, u_types_of(a), a)
+#define u_vec_pop(v, a, ...) _u_vec_pop(v, u_types_of(a), a, ##__VA_ARGS__)
 
 int _u_vec_insert(u_vec_t* v, size_t idx, u_types_type_e type, ...);
-#define u_vec_insert(v, i, a) _u_vec_insert(&v, i, u_types_of(a), a)
+#define u_vec_insert(v, i, a, ...) _u_vec_insert(&v, i, u_types_of(a), a, ##__VA_ARGS__)
 
 int _u_vec_at(u_vec_t v, size_t idx, u_types_type_e type, ...);
-#define u_vec_at(v, i, a) _u_vec_at(v, i, u_types_of(a), a)
+#define u_vec_at(v, i, a, ...) _u_vec_at(v, i, u_types_of(a), a, ##__VA_ARGS__)
 
 int _u_vec_remove(u_vec_t v, size_t idx);
 #define u_vec_remove(v, i) _u_vec_remove(v, i)
 
 int _u_vec_replace(u_vec_t v, size_t idx, u_types_type_e type, ...);
-#define u_vec_replace(v, i, a) _u_vec_replace(v, i, u_types_of(a), a)
+#define u_vec_replace(v, i, a, ...) _u_vec_replace(v, i, u_types_of(a), a, ##__VA_ARGS__)
 
 u_vec_t _u_vec_copy(u_vec_t v);
 #define u_vec_copy(v) _u_vec_copy(v)
 
-u_nullptr_t _u_vec_at_ptr(u_vec_t v, size_t idx);
-#define u_vec_at_ptr(v, i) _u_vec_at_ptr(v, i)
+u_nullptr_t _u_vec_quote(u_vec_t v, size_t idx);
+#define u_vec_quote(v, i, t) (*(t)_u_vec_quote(v, i))
 
 #define u_vec_for(v, it)                                                                           \
   for (size_t i = 0, _len = u_vec_len(v); i < _len && !u_vec_at(v, i, &it); i++)

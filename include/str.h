@@ -74,7 +74,7 @@ ssize_t _u_str_index(u_str_t s, u_types_type_e type, ...);
 #define u_str_index(s, v) _u_str_index(s, u_types_of(v), v)
 
 int _u_str_replace(u_str_t* s, u_types_type_e type_1, u_types_type_e type_2, ...);
-#define u_str_replace(s, o, n) _u_str_replace(s, u_types_of(o), u_types_of(n), o, n)
+#define u_str_replace(s, o, n) _u_str_replace(&s, u_types_of(o), u_types_of(n), o, n)
 
 #define u_str_for(s, ch)                                                                           \
   for (size_t i = 0, _len = u_str_len(s); i < _len && (ch = u_str_at(s, i)); i++)

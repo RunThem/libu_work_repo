@@ -108,6 +108,7 @@ int _u_vec_push(u_vec_t* v, u_types_type_e type, ...) {
   va_start(ap, type);
   dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
 
+  u_dbg("%d, %d, %p", itsize, u_vec_itsize(*v), ptr);
   dbg_err_if(itsize != u_vec_itsize(*v));
 
   if (u_vec_free(*v) == 0) {
@@ -219,9 +220,9 @@ int _u_vec_at(u_vec_t v, size_t idx, u_types_type_e type, ...) {
   va_start(ap, type);
   dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
 
-  dbg_err_if(itsize != u_vec_itsize(v));
-
   vec = CONTAINER_VEC(v);
+
+  dbg_err_if(itsize != vec->itsize);
 
   memcpy((void*)ptr, &vec->buf[idx * vec->itsize], vec->itsize);
 
@@ -296,13 +297,15 @@ err:
   return NULL;
 }
 
-u_nullptr_t _u_vec_at_ptr(u_vec_t v, size_t idx) {
+u_nullptr_t _u_vec_quote(u_vec_t v, size_t idx) {
   u_vec_t vec = NULL;
 
   dbg_return_if(v == NULL, NULL);
   dbg_return_if(idx >= u_vec_len(v), NULL);
 
   vec = CONTAINER_VEC(v);
+
+  u_dbg("ptr is %p, value is %p", &vec->buf[idx * vec->itsize], (u_vec_t)(&vec->buf[idx * vec->itsize])[0]);
 
   return &vec->buf[idx * vec->itsize];
 }

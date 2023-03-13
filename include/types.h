@@ -49,7 +49,7 @@ typedef const void* u_nullptr_t;
 #define u_nullptr(v) ((u_nullptr_t)(v))
 
 typedef struct {
-}* u_any_t;
+} * u_any_t;
 #define u_any(v) ((u_any_t)(v))
 
 typedef const char* u_c_str_t;
@@ -98,7 +98,11 @@ typedef enum {
   U_TYPES_C_STR,
 
   U_TYPES_STR,
+  U_TYPES_STR_PTR,
   U_TYPES_BUF,
+  U_TYPES_BUF_PTR,
+  U_TYPES_VEC,
+  U_TYPES_VEC_PTR,
 
   U_TYPES_NONE = 127,
 } u_types_type_e;
@@ -148,7 +152,11 @@ u_any_t      : U_TYPES_ANY,                                                     
 u_c_str_t    : U_TYPES_C_STR,                                                                      \
                                                                                                    \
 u_str_t      : U_TYPES_STR,                                                                        \
+u_str_t*     : U_TYPES_STR_PTR,                                                                    \
 u_buf_t      : U_TYPES_BUF,                                                                        \
+u_buf_t*     : U_TYPES_BUF_PTR,                                                                    \
+u_vec_t      : U_TYPES_VEC,                                                                        \
+u_vec_t*     : U_TYPES_VEC_PTR,                                                                    \
                                                                                                    \
 default      : U_TYPES_NONE)
 /* clang-format on */

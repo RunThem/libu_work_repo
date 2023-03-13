@@ -114,10 +114,11 @@ u_nullptr_t u_types_parse(u_types_arg_t* arg, va_list ap, size_t* size) {
       arg->p = (u_nullptr_t)va_arg(ap, u_nullptr_t);
       *size  = sizeof(u_f128_t);
       return arg->p;
+
     case U_TYPES_NULLPTR:
       arg->p = (u_nullptr_t)va_arg(ap, u_nullptr_t);
       *size  = sizeof(u_nullptr_t);
-      return arg->p;
+      return &arg->p;
 
     case U_TYPES_ANY:
       arg->p = (u_any_t)va_arg(ap, u_any_t);
@@ -131,11 +132,29 @@ u_nullptr_t u_types_parse(u_types_arg_t* arg, va_list ap, size_t* size) {
 
     case U_TYPES_STR:
       arg->p = (u_str_t)va_arg(ap, u_str_t);
-      *size  = u_str_len(u_str(arg->p));
+      *size  = sizeof(u_str_t);
+      return &arg->p;
+    case U_TYPES_STR_PTR:
+      arg->p = (u_str_t*)va_arg(ap, u_str_t*);
+      *size  = sizeof(u_str_t*);
       return arg->p;
+
     case U_TYPES_BUF:
       arg->p = (u_buf_t)va_arg(ap, u_buf_t);
-      *size  = u_buf_len(u_buf(arg->p));
+      *size  = sizeof(u_buf_t);
+      return &arg->p;
+    case U_TYPES_BUF_PTR:
+      arg->p = (u_buf_t*)va_arg(ap, u_buf_t*);
+      *size  = sizeof(u_buf_t*);
+      return arg->p;
+
+    case U_TYPES_VEC:
+      arg->p = (u_vec_t)va_arg(ap, u_vec_t);
+      *size  = sizeof(u_vec_t);
+      return &arg->p;
+    case U_TYPES_VEC_PTR:
+      arg->p = (u_vec_t*)va_arg(ap, u_vec_t*);
+      *size  = sizeof(u_vec_t*);
       return arg->p;
 
     case U_TYPES_NONE:
