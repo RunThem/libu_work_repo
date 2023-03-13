@@ -19,7 +19,7 @@ u_buf_t _u_buf_create(size_t size);
 #define u_buf_create(s) _u_buf_create(s)
 
 int _u_buf_resize(u_buf_t* b, size_t size);
-#define u_buf_resize(b, ss) _u_buf_resize(&b, ss)
+#define u_buf_resize(b, ss) _u_buf_resize(b, ss)
 
 void _u_buf_clean(u_buf_t b);
 #define u_buf_clean(b) _u_buf_clean(b)

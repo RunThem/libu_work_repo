@@ -101,7 +101,7 @@ int _u_buf_push(u_buf_t* b, u_types_type_e type, ...) {
   dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
 
   if (u_buf_free(*b) < itsize) {
-    dbg_err_if(u_buf_resize(*b, itsize + u_buf_alloc(*b)) != 0);
+    dbg_err_if(u_buf_resize(b, itsize + u_buf_alloc(*b)) != 0);
   }
 
   buf = CONTAINER_BUF(*b);
@@ -167,7 +167,7 @@ int _u_buf_insert(u_buf_t* b, size_t idx, u_types_type_e type, ...) {
   dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
 
   if (u_buf_free(*b) < itsize) {
-    dbg_err_if(u_buf_resize(*b, itsize + u_buf_alloc(*b)) != 0);
+    dbg_err_if(u_buf_resize(b, itsize + u_buf_alloc(*b)) != 0);
   }
 
   buf = CONTAINER_BUF(*b);

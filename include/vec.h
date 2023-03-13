@@ -22,7 +22,7 @@ void _u_vec_clean(u_vec_t v);
 #define u_vec_clean(v) _u_vec_clean(v)
 
 int _u_vec_resize(u_vec_t* v, size_t size);
-#define u_vec_resize(v, s) _u_vec_resize(&v, s)
+#define u_vec_resize(v, s) _u_vec_resize(v, s)
 
 size_t _u_vec_len(u_vec_t v);
 #define u_vec_len(v) _u_vec_len(v)
@@ -40,13 +40,13 @@ u_bool_t _u_vec_empty(u_vec_t v);
 #define u_vec_empty(v) _u_vec_empty(v)
 
 int _u_vec_push(u_vec_t* v, u_types_type_e type, ...);
-#define u_vec_push(v, a, ...) _u_vec_push(&v, u_types_of(a), a, ##__VA_ARGS__)
+#define u_vec_push(v, a, ...) _u_vec_push(v, u_types_of(a), a, ##__VA_ARGS__)
 
 int _u_vec_pop(u_vec_t v, u_types_type_e type, ...);
 #define u_vec_pop(v, a, ...) _u_vec_pop(v, u_types_of(a), a, ##__VA_ARGS__)
 
 int _u_vec_insert(u_vec_t* v, size_t idx, u_types_type_e type, ...);
-#define u_vec_insert(v, i, a, ...) _u_vec_insert(&v, i, u_types_of(a), a, ##__VA_ARGS__)
+#define u_vec_insert(v, i, a, ...) _u_vec_insert(v, i, u_types_of(a), a, ##__VA_ARGS__)
 
 int _u_vec_at(u_vec_t v, size_t idx, u_types_type_e type, ...);
 #define u_vec_at(v, i, a, ...) _u_vec_at(v, i, u_types_of(a), a, ##__VA_ARGS__)
@@ -61,13 +61,22 @@ u_vec_t _u_vec_copy(u_vec_t v);
 #define u_vec_copy(v) _u_vec_copy(v)
 
 u_nullptr_t _u_vec_quote(u_vec_t v, size_t idx);
-#define u_vec_quote(v, i, t) (*(t)_u_vec_quote(v, i))
+#define u_vec_quote(v, i, t) ((t)_u_vec_quote(v, i))
 
-#define u_vec_for(v, it)                                                                           \
-  for (size_t i = 0, _len = u_vec_len(v); i < _len && !u_vec_at(v, i, &it); i++)
+#define _CAT(a, b)  _CAT_(a, b)
+#define _CAT_(a, b) a##b
+
+#define u_vec_for(v, it, ...)                                                                      \
+  for (size_t _CAT(_count_, __LINE__) = 0, _CAT(_len_, __LINE__) = u_vec_len(v);                   \
+       _CAT(_count_, __LINE__) < _CAT(_len_, __LINE__) &&                                          \
+       !u_vec_at(v, _CAT(_count_, __LINE__), it, ##__VA_ARGS__);                                   \
+       _CAT(_count_, __LINE__)++)
 
 #define u_vec_scan(v, p, type)                                                                     \
-  for (size_t i = 0, _len = u_vec_len(v); i < _len && ((p) = (type)u_vec_at_ptr(v, i)); i++)
+  for (size_t _CAT(_count_, __LINE__) = 0, _CAT(_len_, __LINE__) = u_vec_len(v);                   \
+       _CAT(_count_, __LINE__) < _CAT(_len_, __LINE__) &&                                          \
+       ((p) = u_vec_quote(v, _CAT(_count_, __LINE__), type));                                      \
+       _CAT(_count_, __LINE__)++)
 
 #ifdef __cplusplus
 } /* extern "C" */

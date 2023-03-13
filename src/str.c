@@ -114,7 +114,7 @@ err:
   return ~0;
 }
 
-int _u_str_cat(u_str_t* s, u_types_type_e type, ...) {
+int _u_str_push(u_str_t* s, u_types_type_e type, ...) {
   va_list ap;
   size_t itsize;
   u_nullptr_t ptr   = NULL;
@@ -124,21 +124,86 @@ int _u_str_cat(u_str_t* s, u_types_type_e type, ...) {
 
   dbg_return_if(s == NULL, ~0);
   dbg_return_if(*s == NULL, ~0);
-  dbg_return_if(type != U_TYPES_BYTE && type != U_TYPES_C_STR && type != U_TYPES_STR, ~0);
+  dbg_return_if(type != U_TYPES_BYTE && type != U_TYPES_C_STR && type != U_TYPES_STR &&
+                    type != U_TYPES_ANY,
+                ~0);
 
   va_start(ap, type);
   dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
 
-  if (itsize > u_str_free(*s)) {
-    dbg_err_if(u_str_resize(*s, itsize + u_str_alloc(*s)) != 0);
+  dbg_err_if(itsize == 0);
+
+  if (type == U_TYPES_STR) {
+    itsize = CONTAINER_STR(*(u_str_t*)ptr)->len;
+  }
+
+  u_dbg("%d", itsize);
+
+  str = CONTAINER_STR(*s);
+
+  if (itsize > (str->alloc - str->len)) {
+    dbg_err_if(_u_str_resize(s, itsize + str->alloc) != 0);
   }
 
   str = CONTAINER_STR(*s);
 
-  strncpy(&str->buf[str->len], ptr, itsize);
+  if (type == U_TYPES_STR) {
+    strncpy(&str->buf[str->len], CONTAINER_STR(*(u_str_t*)ptr)->buf, itsize);
+  } else {
+    strncpy(&str->buf[str->len], ptr, itsize);
+  }
 
   str->len += itsize;
   str->buf[str->len] = '\0';
+
+  va_end(ap);
+
+  return 0;
+err:
+  va_end(ap);
+
+  return ~0;
+}
+
+int _u_str_pop(u_str_t s, u_types_type_e type, ...) {
+  va_list ap;
+  size_t itsize;
+  u_nullptr_t ptr   = NULL;
+  u_types_arg_t arg = {.type = type};
+
+  u_str_t str_1 = NULL;
+  u_str_t str_2 = NULL;
+
+  dbg_return_if(s == NULL, ~0);
+  dbg_return_if(type != U_TYPES_BYTE_PTR && type != U_TYPES_STR && type != U_TYPES_ANY, ~0);
+
+  va_start(ap, type);
+  dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
+
+  str_1 = CONTAINER_STR(s);
+
+  if (type == U_TYPES_STR) {
+    str_2 = CONTAINER_STR(*(u_str_t*)ptr);
+
+    arg.type = U_TYPES_U64;
+    dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
+
+    itsize = arg.i;
+
+    u_dbg("%d, %d", itsize, str_1->len);
+    dbg_err_if(itsize == 0 || itsize > str_1->len || itsize > str_2->alloc);
+
+    strncpy(str_2->buf, &str_1->buf[str_1->len - itsize], itsize);
+
+    str_2->len = itsize;
+  } else {
+    dbg_err_if(itsize == 0 || itsize > str_1->len);
+
+    strncpy((void*)ptr, &str_1->buf[str_1->len - itsize], itsize);
+  }
+
+  str_1->len -= itsize;
+  str_1->buf[str_1->len] = '\0';
 
   va_end(ap);
 
@@ -166,7 +231,7 @@ int _u_str_insert(u_str_t* s, size_t idx, u_types_type_e type, ...) {
   dbg_alloc_if(ptr = u_types_parse(&arg, ap, &itsize));
 
   if (itsize > u_str_free(*s)) {
-    dbg_err_if(u_str_resize(*s, itsize + u_str_alloc(*s)) != 0);
+    dbg_err_if(u_str_resize(s, itsize + u_str_alloc(*s)) != 0);
   }
 
   str = CONTAINER_STR(*s);
@@ -380,8 +445,8 @@ int _u_str_replace(u_str_t* s, u_types_type_e type_1, u_types_type_e type_2, ...
   u_types_arg_t arg_1 = {.type = type_1};
   u_types_arg_t arg_2 = {.type = type_2};
 
-  size_t diff = 0;
-  ssize_t idx = NULL;
+  size_t diff;
+  ssize_t idx;
   u_str_t str = NULL;
 
   dbg_return_if(s == NULL, ~0);
@@ -402,7 +467,7 @@ int _u_str_replace(u_str_t* s, u_types_type_e type_1, u_types_type_e type_2, ...
   diff = itsize_2 - itsize_1;
   u_dbg("%d", diff);
   if (itsize_2 > itsize_1 && diff > u_str_free(*s)) {
-    dbg_err_if(u_str_resize(*s, diff + u_str_alloc(*s)) != 0);
+    dbg_err_if(u_str_resize(s, diff + u_str_alloc(*s)) != 0);
   }
 
   str = CONTAINER_STR(*s);
@@ -412,6 +477,7 @@ int _u_str_replace(u_str_t* s, u_types_type_e type_1, u_types_type_e type_2, ...
 
   str->len += diff;
 
+  return 0;
 err:
 
   return ~0;

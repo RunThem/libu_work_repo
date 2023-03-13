@@ -23,7 +23,7 @@ u_str_t _u_str_create_from(u_c_str_t c_str);
 #define u_str_create_from(s) _u_str_create_from(s)
 
 int _u_str_resize(u_str_t* s, size_t size);
-#define u_str_resize(s, ss) _u_str_resize(&s, ss)
+#define u_str_resize(s, ss) _u_str_resize(s, ss)
 
 void _u_str_clean(u_str_t s);
 #define u_str_clean(s) _u_str_clean(s)
@@ -40,11 +40,14 @@ size_t _u_str_free(u_str_t s);
 u_bool_t _u_str_empty(u_str_t s);
 #define u_str_empty(s) _u_str_empty(s)
 
-int _u_str_cat(u_str_t* s, u_types_type_e type, ...);
-#define u_str_cat(s, v) _u_str_cat(s, u_types_of(v), v)
+int _u_str_push(u_str_t* s, u_types_type_e type, ...);
+#define u_str_push(s, v, ...) _u_str_push(s, u_types_of(v), v, ##__VA_ARGS__)
+
+int _u_str_pop(u_str_t s, u_types_type_e type, ...);
+#define u_str_pop(s, v, ...) _u_str_pop(s, u_types_of(v), v, ##__VA_ARGS__)
 
 int _u_str_insert(u_str_t* s, size_t idx, u_types_type_e type, ...);
-#define u_str_insert(s, i, v) _u_str_insert(s, i, u_types_of(v), v)
+#define u_str_insert(s, i, v, ...) _u_str_insert(s, i, u_types_of(v), v, ##__VA_ARGS__)
 
 char _u_str_at(u_str_t s, size_t idx);
 #define u_str_at(s, i) _u_str_at(s, i)
@@ -74,10 +77,22 @@ ssize_t _u_str_index(u_str_t s, u_types_type_e type, ...);
 #define u_str_index(s, v) _u_str_index(s, u_types_of(v), v)
 
 int _u_str_replace(u_str_t* s, u_types_type_e type_1, u_types_type_e type_2, ...);
-#define u_str_replace(s, o, n) _u_str_replace(&s, u_types_of(o), u_types_of(n), o, n)
+#define u_str_replace(s, o, n) _u_str_replace(s, u_types_of(o), u_types_of(n), o, n)
+
+#define _CAT(a, b)  _CAT_(a, b)
+#define _CAT_(a, b) a##b
 
 #define u_str_for(s, ch)                                                                           \
-  for (size_t i = 0, _len = u_str_len(s); i < _len && (ch = u_str_at(s, i)); i++)
+  for (size_t _CAT(_count_, __LINE__) = 0, _CAT(_len_, __LINE__) = u_str_len(s);                   \
+       _CAT(_count_, __LINE__) < _CAT(_len_, __LINE__) &&                                          \
+       (ch = u_str_at(s, _CAT(_count_, __LINE__)));                                                \
+       _CAT(_count_, __LINE__)++)
+
+#define u_str_for_pop(s, ch)                                                                       \
+  for (size_t _CAT(_count_, __LINE__) = 0, _CAT(_len_, __LINE__) = u_str_len(s);                   \
+       _CAT(_count_, __LINE__) < _CAT(_len_, __LINE__) &&                                          \
+       (ch = u_str_at(s, _CAT(_count_, __LINE__)));                                                \
+       _CAT(_count_, __LINE__)++)
 
 #ifdef __cplusplus
 } /* extern "C" */
